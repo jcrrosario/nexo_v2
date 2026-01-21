@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { TypeOrmModule } from '@nestjs/typeorm'
 
-import { UsersNexoModule } from './users-nexo/users-nexo.module';
-import { AdminModule } from './admin/admin.module';
-import { AdminAuthModule } from './auth/admin-auth/admin-auth.module';
-
+import { UsersNexoModule } from './users-nexo/users-nexo.module'
+import { AdminModule } from './admin/admin.module'
+import { AdminAuthModule } from './auth/admin-auth/admin-auth.module'
+import { EntityAuthModule } from './entity/auth/entity-auth.module'
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { AdminAuthModule } from './auth/admin-auth/admin-auth.module';
     UsersNexoModule,
     AdminModule,
     AdminAuthModule,
-
+    EntityAuthModule,
   ],
 })
 export class AppModule {}

@@ -1,17 +1,17 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
-import { UsersNexoService } from '../../users-nexo/users-nexo.service'
+import { UsuarioService } from '../usuario/usuario.service'
 
 @Injectable()
-export class AdminAuthService {
+export class EntityAuthService {
   constructor(
-    private usersService: UsersNexoService,
+    private usuarioService: UsuarioService,
     private jwtService: JwtService,
   ) {}
 
-  async login(usernexo_id: string, senha: string) {
-    const user = await this.usersService.findByUserId(usernexo_id)
+  async login(user_id: string, idtb_empresas: number, senha: string) {
+    const user = await this.usuarioService.findByLogin(user_id, idtb_empresas)
 
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas')
@@ -24,9 +24,9 @@ export class AdminAuthService {
     }
 
     const payload = {
-      sub: user.usernexo_id,
-      email: user.email,
-      type: 'admin',
+      user_id: user.user_id,
+      idtb_empresas: user.idtb_empresas,
+      type: 'entity',
     }
 
     return {
