@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 export default function EntityLoginPage() {
   const router = useRouter()
-  const [user_id, setUserId] = useState('')
+  const [userId, setUserId] = useState('')
   const [empresa, setEmpresa] = useState('')
   const [senha, setSenha] = useState('')
 
@@ -16,7 +16,7 @@ export default function EntityLoginPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        user_id,
+        user_id: userId,
         idtb_empresas: Number(empresa),
         senha,
       }),
@@ -33,29 +33,130 @@ export default function EntityLoginPage() {
   }
 
   return (
-    <form onSubmit={handleLogin}>
-      <h2>Login</h2>
+    <div style={page}>
+      <div style={card}>
+        <div style={logoArea}>
+          <div style={logo}>NEXO</div>
+          <span style={subtitle}>Acesse sua conta</span>
+        </div>
 
-      <input
-        placeholder="Usuário"
-        value={user_id}
-        onChange={e => setUserId(e.target.value)}
-      />
+        <form onSubmit={handleLogin} style={form}>
+          <input
+            placeholder="Número da entidade"
+            value={empresa}
+            onChange={e => setEmpresa(e.target.value)}
+            style={input}
+          />
 
-      <input
-        placeholder="Empresa"
-        value={empresa}
-        onChange={e => setEmpresa(e.target.value)}
-      />
+          <input
+            placeholder="Usuário"
+            value={userId}
+            onChange={e => setUserId(e.target.value)}
+            style={input}
+          />
 
-      <input
-        type="password"
-        placeholder="Senha"
-        value={senha}
-        onChange={e => setSenha(e.target.value)}
-      />
+          <input
+            type="password"
+            placeholder="Senha"
+            value={senha}
+            onChange={e => setSenha(e.target.value)}
+            style={input}
+          />
 
-      <button>Entrar</button>
-    </form>
+          <button style={button}>Acessar</button>
+        </form>
+
+        <div style={links}>
+          <span style={link}>Trocar senha</span>
+          <span style={link}>Esqueceu a senha?</span>
+        </div>
+
+        <div style={footer}>
+          <span style={{ opacity: 0.7 }}>Serenyo</span>
+        </div>
+      </div>
+    </div>
   )
+}
+
+const page: React.CSSProperties = {
+  height: '100vh',
+  background: 'linear-gradient(180deg, #eaf2ff, #f8fbff)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+
+const card: React.CSSProperties = {
+  width: 380,
+  background: '#ffffff',
+  borderRadius: 20,
+  padding: '36px 32px',
+  boxShadow: '0 20px 50px rgba(0,0,0,0.12)',
+  display: 'flex',
+  flexDirection: 'column',
+}
+
+const logoArea: React.CSSProperties = {
+  textAlign: 'center',
+  marginBottom: 24,
+}
+
+const logo: React.CSSProperties = {
+  fontSize: 28,
+  fontWeight: 800,
+  color: '#1f3a5f',
+  marginBottom: 6,
+}
+
+const subtitle: React.CSSProperties = {
+  fontSize: 16,
+  color: '#5b6b82',
+}
+
+const form: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 14,
+  marginTop: 16,
+}
+
+const input: React.CSSProperties = {
+  height: 46,
+  borderRadius: 10,
+  border: '1px solid #dbe3f0',
+  padding: '0 14px',
+  fontSize: 14,
+  outline: 'none',
+}
+
+const button: React.CSSProperties = {
+  marginTop: 10,
+  height: 46,
+  borderRadius: 23,
+  border: 'none',
+  background: 'linear-gradient(90deg, #4bb6c9, #3a8dd6)',
+  color: '#fff',
+  fontSize: 15,
+  fontWeight: 600,
+  cursor: 'pointer',
+}
+
+const links: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  fontSize: 13,
+  color: '#4c6ef5',
+  marginTop: 16,
+}
+
+const link: React.CSSProperties = {
+  cursor: 'pointer',
+}
+
+const footer: React.CSSProperties = {
+  marginTop: 28,
+  textAlign: 'center',
+  fontSize: 13,
+  color: '#7a8ca5',
 }
