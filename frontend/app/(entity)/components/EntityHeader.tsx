@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function EntityHeader() {
   const router = useRouter()
+  const dropdownRef = useRef<HTMLDivElement | null>(null)
 
   const [entityName, setEntityName] = useState('')
   const [userName, setUserName] = useState('')
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     const e = localStorage.getItem('entity_nome')
@@ -15,6 +17,21 @@ export default function EntityHeader() {
 
     if (e) setEntityName(e)
     if (u) setUserName(u)
+  }, [])
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () =>
+      document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   function handleLogout() {
@@ -27,8 +44,8 @@ export default function EntityHeader() {
   return (
     <header
       style={{
-        height: 64,
-        padding: '0 28px',
+        height: 88,
+        padding: '0 32px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -37,54 +54,92 @@ export default function EntityHeader() {
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}
     >
+      {/* EMPRESA */}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <span style={{ fontSize: 12, opacity: 0.7 }}>
-          Empresa
-        </span>
-        <strong style={{ fontSize: 15 }}>
+        <span style={{ fontSize: 14, opacity: 0.7 }}>Empresa</span>
+        <strong style={{ fontSize: 22, fontWeight: 700 }}>
           {entityName}
         </strong>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        {userName && (
-          <>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.18)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-              }}
-            >
-              {userName.charAt(0).toUpperCase()}
-            </div>
-
-            <span style={{ fontSize: 14 }}>
-              {userName}
-            </span>
-          </>
-        )}
-
-        <button
-          onClick={handleLogout}
+      {/* USUÁRIO / DROPDOWN */}
+      <div
+        ref={dropdownRef}
+        style={{ position: 'relative', cursor: 'pointer' }}
+      >
+        <div
+          onClick={() => setOpen(prev => !prev)}
           style={{
-            marginLeft: 8,
-            padding: '6px 14px',
-            borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.25)',
-            background: 'transparent',
-            color: '#fff',
-            fontSize: 13,
-            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
           }}
         >
-          Sair
-        </button>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.18)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              fontSize: 18,
+            }}
+          >
+            {userName.charAt(0).toUpperCase()}
+          </div>
+
+          <span style={{ fontSize: 16 }}>
+            {userName}
+          </span>
+
+          <span style={{ opacity: 0.7 }}>
+            ▾
+          </span>
+        </div>
+
+        {open && (
+          <div
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: 58,
+              width: 200,
+              background: '#0b1a3a',
+              borderRadius: 12,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                padding: '14px 16px',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+              }}
+            >
+              <div style={{ fontSize: 14, fontWeight: 600 }}>
+                {userName}
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>
+                Usuário ativo
+              </div>
+            </div>
+
+            <div
+              onClick={handleLogout}
+              style={{
+                padding: '12px 16px',
+                fontSize: 14,
+                cursor: 'pointer',
+                color: '#ffb4b4',
+              }}
+            >
+              Sair do sistema
+            </div>
+          </div>
+        )}
       </div>
     </header>
   )

@@ -10,7 +10,6 @@ export default function EntityLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-
   const [openMenu, setOpenMenu] = useState<string | null>('cadastros')
 
   useEffect(() => {
@@ -42,15 +41,23 @@ export default function EntityLayout({
   return (
     <div style={layout}>
       <aside style={sidebar}>
+        {/* LOGO */}
         <div style={brand}>
-          <div style={logoBox}>N</div>
-          <span style={brandName}>NEXO</span>
+          <img
+            src="/logo-nexo.png"
+            alt="NEXO"
+            style={{
+              height: 60,
+              maxWidth: '100%',
+              objectFit: 'contain',
+            }}
+          />
         </div>
 
+        {/* MENU */}
         <nav style={menu}>
           <div style={menuItemActive}>📊 Dashboard</div>
 
-          {/* CADASTROS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('cadastros')}>
               📁 Cadastros
@@ -74,7 +81,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* COLETA */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('coleta')}>
               📝 Coleta
@@ -88,7 +94,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* INVENTÁRIO */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('inventario')}>
               📦 Inventário
@@ -102,7 +107,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* PLANO */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('plano')}>
               🧭 Plano de ação
@@ -118,7 +122,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* RELATÓRIOS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('relatorios')}>
               📊 Relatórios
@@ -153,10 +156,10 @@ const layout: React.CSSProperties = {
 /* ===== SIDEBAR ===== */
 
 const sidebar: React.CSSProperties = {
-  width: 270,
+  width: 300,
   background: 'linear-gradient(180deg, #050b1e, #0b1a3a)',
   color: '#fff',
-  padding: '24px 20px',
+  padding: '32px 22px',
 }
 
 /* BRAND */
@@ -164,24 +167,8 @@ const sidebar: React.CSSProperties = {
 const brand: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 12,
-  marginBottom: 28,
-}
-
-const logoBox: React.CSSProperties = {
-  width: 38,
-  height: 38,
-  borderRadius: 10,
-  background: 'rgba(255,255,255,0.15)',
-  display: 'flex',
-  alignItems: 'center',
   justifyContent: 'center',
-  fontWeight: 800,
-}
-
-const brandName: React.CSSProperties = {
-  fontSize: 18,
-  fontWeight: 700,
+  marginBottom: 32,
 }
 
 /* MENU */
