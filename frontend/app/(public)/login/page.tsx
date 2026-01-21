@@ -28,9 +28,7 @@ export default function EntityLoginPage() {
       const data = await res.json().catch(() => null)
 
       if (data?.message?.includes('bloqueado')) {
-        setErro(
-          'O acesso desta empresa está temporariamente bloqueado.'
-        )
+        setErro('O acesso desta empresa está temporariamente bloqueado.')
       } else {
         setErro('Usuário, empresa ou senha inválidos.')
       }
@@ -39,7 +37,23 @@ export default function EntityLoginPage() {
     }
 
     const data = await res.json()
+
     localStorage.setItem('entity_token', data.access_token)
+
+    localStorage.setItem(
+      'entity_nome',
+      data.empresa?.nome_fantasia ||
+        data.empresa_nome ||
+        'Empresa'
+    )
+
+    localStorage.setItem(
+      'user_nome',
+      data.usuario?.nome ||
+        data.user_nome ||
+        userId
+    )
+
     router.replace('/dashboard')
   }
 

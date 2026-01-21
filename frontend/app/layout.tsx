@@ -1,18 +1,18 @@
-import './globals.css';
+import './globals.css'
 
 export const metadata = {
   title: 'NEXO',
   description: 'NEXO Platform',
-};
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="pt-BR">
       <body>{children}</body>
     </html>
-  );
+  )
 }

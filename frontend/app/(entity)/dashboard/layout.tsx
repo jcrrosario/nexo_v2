@@ -2,8 +2,13 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import EntityHeader from '../components/EntityHeader'
 
-export default function EntityLayout({ children }: { children: React.ReactNode }) {
+export default function EntityLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const router = useRouter()
 
   useEffect(() => {
@@ -41,20 +46,7 @@ export default function EntityLayout({ children }: { children: React.ReactNode }
       </aside>
 
       <div style={content}>
-        <header style={header}>
-          <span>Área da Entidade</span>
-
-          <button
-            onClick={() => {
-              localStorage.removeItem('entity_token')
-              router.replace('/login')
-            }}
-            style={logout}
-          >
-            Sair
-          </button>
-        </header>
-
+        <EntityHeader />
         <main style={main}>{children}</main>
       </div>
     </div>
@@ -96,25 +88,6 @@ const content: React.CSSProperties = {
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
-}
-
-const header: React.CSSProperties = {
-  height: 64,
-  background: '#06122E',
-  color: '#fff',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '0 24px',
-}
-
-const logout: React.CSSProperties = {
-  background: 'transparent',
-  border: '1px solid #fff',
-  color: '#fff',
-  padding: '6px 12px',
-  borderRadius: 6,
-  cursor: 'pointer',
 }
 
 const main: React.CSSProperties = {
