@@ -21,26 +21,35 @@ export class EntityAuthService {
       )
     }
 
-    const user = await this.usuarioService.findByLogin(user_id, idtb_empresas)
+    const usuario = await this.usuarioService.findByLogin(
+      user_id,
+      idtb_empresas,
+    )
 
-    if (!user) {
+    if (!usuario) {
       throw new UnauthorizedException('Credenciais inválidas')
     }
 
-    const match = await bcrypt.compare(senha, user.senha)
+    const match = await bcrypt.compare(senha, usuario.senha)
 
     if (!match) {
       throw new UnauthorizedException('Credenciais inválidas')
     }
 
     const payload = {
-      user_id: user.user_id,
-      idtb_empresas: user.idtb_empresas,
+      user_id: usuario.user_id,
+      idtb_empresas: usuario.idtb_empresas,
       type: 'entity',
     }
 
     return {
       access_token: this.jwtService.sign(payload),
+      empresa: {
+        nome_fantasia: empresa.nome_fantasia,
+      },
+      usuario: {
+        nome: usuario.nome,
+      },
     }
   }
 }
