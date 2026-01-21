@@ -8,9 +8,11 @@ export default function EntityLoginPage() {
   const [userId, setUserId] = useState('')
   const [empresa, setEmpresa] = useState('')
   const [senha, setSenha] = useState('')
+  const [erro, setErro] = useState('')
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    setErro('')
 
     const res = await fetch('http://localhost:3001/entity/auth/login', {
       method: 'POST',
@@ -23,7 +25,16 @@ export default function EntityLoginPage() {
     })
 
     if (!res.ok) {
-      alert('Login inválido')
+      const data = await res.json().catch(() => null)
+
+      if (data?.message?.includes('bloqueado')) {
+        setErro(
+          'O acesso desta empresa está temporariamente bloqueado.'
+        )
+      } else {
+        setErro('Usuário, empresa ou senha inválidos.')
+      }
+
       return
     }
 
@@ -62,6 +73,23 @@ export default function EntityLoginPage() {
             onChange={e => setSenha(e.target.value)}
             style={input}
           />
+
+          {erro && (
+            <div
+              style={{
+                background: '#fff4e5',
+                color: '#8a5a00',
+                padding: '12px 14px',
+                borderRadius: 10,
+                fontSize: 14,
+                lineHeight: 1.4,
+                textAlign: 'center',
+                border: '1px solid #ffe0b2',
+              }}
+            >
+              {erro}
+            </div>
+          )}
 
           <button style={button}>Acessar</button>
         </form>

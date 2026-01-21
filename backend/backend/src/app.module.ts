@@ -6,6 +6,7 @@ import { UsersNexoModule } from './users-nexo/users-nexo.module'
 import { AdminModule } from './admin/admin.module'
 import { AdminAuthModule } from './auth/admin-auth/admin-auth.module'
 import { EntityAuthModule } from './entity/auth/entity-auth.module'
+import { EmpresaModule } from './entity/empresa/empresa.module'
 
 @Module({
   imports: [
@@ -21,12 +22,13 @@ import { EntityAuthModule } from './entity/auth/entity-auth.module'
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
     }),
 
     UsersNexoModule,
     AdminModule,
     AdminAuthModule,
+    EmpresaModule,
     EntityAuthModule,
   ],
 })
