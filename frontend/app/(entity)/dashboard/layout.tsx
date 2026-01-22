@@ -1,4 +1,3 @@
-// app/(entity)/dashboard/layout.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -18,9 +17,6 @@ import {
   ClipboardList,
   Search,
   FileText,
-  Archive,
-  Shield,
-  Target,
   BarChart3,
   ChevronDown,
   ChevronRight,
@@ -50,18 +46,13 @@ export default function EntityLayout({
   }
 
   function isActive(path: string) {
-    return pathname.startsWith(path)
-  }
-
-  function breadcrumb() {
-    const parts = pathname.split('/').filter(Boolean).slice(1)
-    return parts.join(' / ')
+    return pathname === path || pathname.startsWith(path + '/')
   }
 
   return (
     <div style={layout}>
+      {/* SIDEBAR */}
       <aside style={{ ...sidebar, width: collapsed ? 90 : 300 }}>
-        {/* LOGO */}
         <div style={brand}>
           <img
             src="/logo-nexo.png"
@@ -73,23 +64,20 @@ export default function EntityLayout({
           />
         </div>
 
-        {/* COLLAPSE */}
-        <div
-          onClick={() => setCollapsed(p => !p)}
-          style={collapseBtn}
-        >
+        <div onClick={() => setCollapsed(p => !p)} style={collapseBtn}>
           {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
         </div>
 
-        {/* MENU */}
         <nav style={menu}>
+          {/* DASHBOARD */}
           <div
             style={{
               ...menuItem,
-              ...(isActive('/dashboard') ? menuActive : {}),
+              ...(pathname === '/dashboard' ? menuActive : {}),
             }}
+            onClick={() => router.push('/dashboard')}
           >
-            {isActive('/dashboard') && <span style={activeBar} />}
+            {pathname === '/dashboard' && <span style={activeBar} />}
             <LayoutDashboard size={18} />
             {!collapsed && <span>Dashboard</span>}
           </div>
@@ -102,16 +90,23 @@ export default function EntityLayout({
                 {!collapsed && <span>Cadastros</span>}
               </div>
               {!collapsed &&
-                (openMenu === 'cadastros' ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                ))}
+                (openMenu === 'cadastros'
+                  ? <ChevronDown size={16} />
+                  : <ChevronRight size={16} />)}
             </div>
 
             {!collapsed && openMenu === 'cadastros' && (
               <div style={submenu}>
-                <div style={submenuItem}><Users size={16} /> Usuários</div>
+                <div
+                  style={{
+                    ...submenuItem,
+                    ...(isActive('/dashboard/usuarios') ? submenuActive : {}),
+                  }}
+                  onClick={() => router.push('/dashboard/usuarios')}
+                >
+                  <Users size={16} /> Usuários
+                </div>
+
                 <div style={submenuItem}><Building2 size={16} /> Departamentos</div>
                 <div style={submenuItem}><Briefcase size={16} /> Função</div>
                 <div style={submenuItem}><AlertTriangle size={16} /> Categoria de risco</div>
@@ -134,60 +129,16 @@ export default function EntityLayout({
                 {!collapsed && <span>Coleta</span>}
               </div>
               {!collapsed &&
-                (openMenu === 'coleta' ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                ))}
+                (openMenu === 'coleta'
+                  ? <ChevronDown size={16} />
+                  : <ChevronRight size={16} />)}
             </div>
 
             {!collapsed && openMenu === 'coleta' && (
               <div style={submenu}>
-                <div style={submenuItem}><FileText size={16} /> Pesquisa de usuário</div>
-              </div>
-            )}
-          </div>
-
-          {/* INVENTÁRIO */}
-          <div>
-            <div style={menuGroupHeader} onClick={() => toggle('inventario')}>
-              <div style={menuLabel}>
-                <Archive size={18} />
-                {!collapsed && <span>Inventário</span>}
-              </div>
-              {!collapsed &&
-                (openMenu === 'inventario' ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                ))}
-            </div>
-
-            {!collapsed && openMenu === 'inventario' && (
-              <div style={submenu}>
-                <div style={submenuItem}><Shield size={16} /> Risco ocupacional</div>
-              </div>
-            )}
-          </div>
-
-          {/* PLANO */}
-          <div>
-            <div style={menuGroupHeader} onClick={() => toggle('plano')}>
-              <div style={menuLabel}>
-                <Target size={18} />
-                {!collapsed && <span>Plano de ação</span>}
-              </div>
-              {!collapsed &&
-                (openMenu === 'plano' ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                ))}
-            </div>
-
-            {!collapsed && openMenu === 'plano' && (
-              <div style={submenu}>
-                <div style={submenuItem}><Target size={16} /> Programa de gerenciamento de risco</div>
+                <div style={submenuItem}>
+                  <FileText size={16} /> Pesquisa
+                </div>
               </div>
             )}
           </div>
@@ -200,31 +151,17 @@ export default function EntityLayout({
                 {!collapsed && <span>Relatórios</span>}
               </div>
               {!collapsed &&
-                (openMenu === 'relatorios' ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                ))}
+                (openMenu === 'relatorios'
+                  ? <ChevronDown size={16} />
+                  : <ChevronRight size={16} />)}
             </div>
-
-            {!collapsed && openMenu === 'relatorios' && (
-              <div style={submenu}>
-                <div style={submenuItem}><BarChart3 size={16} /> Gerencial</div>
-              </div>
-            )}
           </div>
         </nav>
       </aside>
 
+      {/* CONTEÚDO – LIMPO, SEM INTERFERÊNCIA */}
       <div style={content}>
         <EntityHeader />
-
-        <div style={contentHeader}>
-          <div style={breadcrumbStyle}>{breadcrumb()}</div>
-          <h1 style={contentTitle}>Dashboard</h1>
-          <p style={contentSubtitle}>Bem-vindo ao sistema</p>
-        </div>
-
         <main style={main}>{children}</main>
       </div>
     </div>
@@ -323,32 +260,15 @@ const submenuItem = {
   gap: 8,
 }
 
+const submenuActive = {
+  background: 'rgba(255,255,255,0.12)',
+  borderRadius: 8,
+}
+
 const content = {
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
-}
-
-const contentHeader = {
-  padding: '28px 32px 18px',
-  background: '#fff',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
-}
-
-const breadcrumbStyle = {
-  fontSize: 12,
-  color: '#7a8ca5',
-  marginBottom: 6,
-}
-
-const contentTitle = {
-  fontSize: 32,
-  fontWeight: 700,
-}
-
-const contentSubtitle = {
-  fontSize: 15,
-  color: '#5b6b82',
 }
 
 const main = {
