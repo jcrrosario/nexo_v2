@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, Like } from 'typeorm'
+import { Repository } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import { UsuarioEntity } from './usuario.entity'
 
@@ -27,19 +27,22 @@ export class UsuarioService {
     limit: number,
     search?: string,
   ) {
-    const where = search
-      ? [
-          { idtb_empresas, nome: Like(`%${search}%`) },
-          { idtb_empresas, email: Like(`%${search}%`) },
-        ]
-      : { idtb_empresas }
+    const qb = this.repo.createQueryBuilder('u')
 
-    const [data, total] = await this.repo.findAndCount({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { nome: 'ASC' },
-    })
+    qb.where('u.idtb_empresas = :idtb_empresas', { idtb_empresas })
+
+    if (search && search.trim() !== '') {
+      qb.andWhere(
+        '(u.nome ILIKE :search OR u.email ILIKE :search)',
+        { search: `%${search}%` },
+      )
+    }
+
+    qb.orderBy('u.nome', 'ASC')
+      .skip((page - 1) * limit)
+      .take(limit)
+
+    const [data, total] = await qb.getManyAndCount()
 
     return {
       data,

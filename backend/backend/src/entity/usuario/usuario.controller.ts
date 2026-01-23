@@ -8,9 +8,12 @@ import {
   Body,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common'
 import { UsuarioService } from './usuario.service'
+import { EntityJwtGuard } from '../auth/entity-jwt.guard'
 
+@UseGuards(EntityJwtGuard)
 @Controller('entity/usuarios')
 export class UsuarioController {
   constructor(private readonly service: UsuarioService) {}

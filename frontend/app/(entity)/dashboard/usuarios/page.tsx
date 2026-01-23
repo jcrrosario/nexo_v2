@@ -1,39 +1,45 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FileText, FileSpreadsheet, Plus } from 'lucide-react'
 import CrudLayout from '../../components/CrudLayout'
 import CrudTable from '../../components/CrudTable'
 import CrudPagination from '../../components/CrudPagination'
+import { api } from '@/lib/api'
 
 type Usuario = {
-  id: number
+  user_id: string
   nome: string
   email: string
-  status: 'Ativo' | 'Inativo'
+  ativo: 'Sim' | 'Não'
 }
-
-const MOCK: Usuario[] = [
-  { id: 1, nome: 'Jean Rosario', email: 'jean@nexo.com', status: 'Ativo' },
-  { id: 2, nome: 'Maria Silva', email: 'maria@nexo.com', status: 'Ativo' },
-  { id: 3, nome: 'Carlos Souza', email: 'carlos@nexo.com', status: 'Inativo' },
-]
 
 export default function UsuariosPage() {
   const [busca, setBusca] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize] = useState(5)
 
-  const pageSize = 5
+  const [data, setData] = useState<Usuario[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
 
-  const filtrados = MOCK.filter(
-    u =>
-      u.nome.toLowerCase().includes(busca.toLowerCase()) ||
-      u.email.toLowerCase().includes(busca.toLowerCase())
-  )
+  async function carregarUsuarios() {
+    setLoading(true)
+    try {
+      const res = await api.get(
+        `/entity/usuarios?page=${page}&limit=${pageSize}&search=${busca}`,
+      )
 
-  const inicio = (page - 1) * pageSize
-  const fim = page * pageSize
-  const dadosPagina = filtrados.slice(inicio, fim)
+      setData(res.data)
+      setTotal(res.total)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    carregarUsuarios()
+  }, [page, busca])
 
   return (
     <CrudLayout
@@ -69,11 +75,12 @@ export default function UsuariosPage() {
       />
 
       <CrudTable
+        loading={loading}
         columns={[
           { key: 'nome', label: 'Nome' },
           { key: 'email', label: 'E-mail' },
           {
-            key: 'status',
+            key: 'ativo',
             label: 'Status',
             render: u => (
               <span
@@ -83,23 +90,23 @@ export default function UsuariosPage() {
                   fontSize: 12,
                   fontWeight: 500,
                   background:
-                    u.status === 'Ativo' ? '#e7f6ec' : '#fdecea',
+                    u.ativo === 'Sim' ? '#e7f6ec' : '#fdecea',
                   color:
-                    u.status === 'Ativo' ? '#1e7e34' : '#c62828',
+                    u.ativo === 'Sim' ? '#1e7e34' : '#c62828',
                 }}
               >
-                {u.status}
+                {u.ativo === 'Sim' ? 'Ativo' : 'Inativo'}
               </span>
             ),
           },
           { key: 'actions', label: 'Ações' },
         ]}
-        data={dadosPagina}
+        data={data}
       />
 
       <CrudPagination
         page={page}
-        total={filtrados.length}
+        total={total}
         pageSize={pageSize}
         onPageChange={setPage}
       />

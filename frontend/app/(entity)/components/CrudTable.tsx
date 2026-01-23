@@ -1,7 +1,5 @@
 'use client'
 
-import { Eye, Pencil, Trash2 } from 'lucide-react'
-
 type Column<T> = {
   key: keyof T | 'actions'
   label: string
@@ -11,11 +9,13 @@ type Column<T> = {
 type CrudTableProps<T> = {
   columns: Column<T>[]
   data: T[]
+  rowKey?: (row: T, index: number) => string | number
 }
 
-export default function CrudTable<T extends { id: number }>({
+export default function CrudTable<T extends Record<string, any>>({
   columns,
   data,
+  rowKey,
 }: CrudTableProps<T>) {
   return (
     <table style={table}>
@@ -30,21 +30,21 @@ export default function CrudTable<T extends { id: number }>({
       </thead>
 
       <tbody>
-        {data.map(row => (
-          <tr key={row.id}>
+        {data.map((row, index) => (
+          <tr
+            key={
+              rowKey
+                ? rowKey(row, index)
+                : `${row.user_id ?? 'row'}-${index}`
+            }
+          >
             {columns.map(col => (
               <td key={String(col.key)} style={td}>
-                {col.key === 'actions' ? (
-                  <div style={actions}>
-                    <Eye size={16} />
-                    <Pencil size={16} />
-                    <Trash2 size={16} />
-                  </div>
-                ) : col.render ? (
-                  col.render(row)
-                ) : (
-                  String(row[col.key])
-                )}
+                {col.key === 'actions'
+                  ? '...'
+                  : col.render
+                  ? col.render(row)
+                  : row[col.key]}
               </td>
             ))}
           </tr>
@@ -58,7 +58,7 @@ export default function CrudTable<T extends { id: number }>({
 
 const table = {
   width: '100%',
-  borderCollapse: 'collapse' as const,
+  borderCollapse: 'collapse',
 }
 
 const th = {
@@ -71,12 +71,6 @@ const th = {
 
 const td = {
   padding: '10px 12px',
-  borderBottom: '1px solid #e1e6ef',
+  borderBottom: '1px solid #e5e7eb',
   fontSize: 14,
-}
-
-const actions = {
-  display: 'flex',
-  gap: 10,
-  cursor: 'pointer',
 }
