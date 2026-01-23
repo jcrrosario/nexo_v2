@@ -9,14 +9,17 @@ export default function EntityHeader() {
 
   const [entityName, setEntityName] = useState('')
   const [userName, setUserName] = useState('')
+  const [userFoto, setUserFoto] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
     const e = localStorage.getItem('entity_nome')
     const u = localStorage.getItem('user_nome')
+    const f = localStorage.getItem('user_foto')
 
     if (e) setEntityName(e)
     if (u) setUserName(u)
+    if (f) setUserFoto(f)
   }, [])
 
   useEffect(() => {
@@ -38,8 +41,14 @@ export default function EntityHeader() {
     localStorage.removeItem('entity_token')
     localStorage.removeItem('entity_nome')
     localStorage.removeItem('user_nome')
+    localStorage.removeItem('user_foto')
     router.replace('/login')
   }
+
+  const avatarUrl =
+    userFoto && userFoto !== 'null'
+      ? `${process.env.NEXT_PUBLIC_API_URL}${userFoto}`
+      : null
 
   return (
     <header
@@ -75,21 +84,36 @@ export default function EntityHeader() {
             gap: 12,
           }}
         >
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.18)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-              fontSize: 18,
-            }}
-          >
-            {userName.charAt(0).toUpperCase()}
-          </div>
+          {/* AVATAR */}
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt="Avatar"
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '2px solid rgba(255,255,255,0.25)',
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.18)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: 18,
+              }}
+            >
+              {userName.charAt(0).toUpperCase()}
+            </div>
+          )}
 
           <span style={{ fontSize: 16 }}>
             {userName}
@@ -106,7 +130,7 @@ export default function EntityHeader() {
               position: 'absolute',
               right: 0,
               top: 58,
-              width: 200,
+              width: 220,
               background: '#0b1a3a',
               borderRadius: 12,
               boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
@@ -117,13 +141,47 @@ export default function EntityHeader() {
               style={{
                 padding: '14px 16px',
                 borderBottom: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
               }}
             >
-              <div style={{ fontSize: 14, fontWeight: 600 }}>
-                {userName}
-              </div>
-              <div style={{ fontSize: 12, opacity: 0.7 }}>
-                Usuário ativo
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Avatar"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.18)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: 14,
+                  }}
+                >
+                  {userName.charAt(0).toUpperCase()}
+                </div>
+              )}
+
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>
+                  {userName}
+                </div>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>
+                  Usuário ativo
+                </div>
               </div>
             </div>
 
