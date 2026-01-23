@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as bcrypt from 'bcrypt'
@@ -11,6 +11,9 @@ export class UsuarioService {
     private readonly repo: Repository<UsuarioEntity>,
   ) {}
 
+  /* ======================================================
+   * LOGIN
+   * ====================================================== */
   async findByLogin(user_id: string, idtb_empresas: number) {
     return this.repo.findOne({
       where: {
@@ -21,6 +24,9 @@ export class UsuarioService {
     })
   }
 
+  /* ======================================================
+   * LISTAGEM (com paginação + busca)
+   * ====================================================== */
   async listar(
     idtb_empresas: number,
     page: number,
@@ -52,36 +58,62 @@ export class UsuarioService {
     }
   }
 
+  /* ======================================================
+   * CRIAÇÃO
+   * ====================================================== */
   async criar(idtb_empresas: number, payload: any) {
+    if (!payload.senha || payload.senha.trim() === '') {
+      throw new BadRequestException('Senha é obrigatória')
+    }
+
     const senhaHash = await bcrypt.hash(payload.senha, 10)
 
     const usuario = this.repo.create({
-      ...payload,
+      user_id: payload.user_id,
+      nome: payload.nome,
+      email: payload.email,
       senha: senhaHash,
+      perfil: payload.perfil || 'Usuario',
+      ativo: payload.ativo || 'Sim',
+      foto: payload.foto || null,
       idtb_empresas,
-      ativo: 'Sim',
     })
 
     return this.repo.save(usuario)
   }
 
+  /* ======================================================
+   * ATUALIZAÇÃO
+   * ====================================================== */
   async atualizar(
     idtb_empresas: number,
     user_id: string,
     payload: any,
   ) {
-    if (payload.senha) {
-      payload.senha = await bcrypt.hash(payload.senha, 10)
+    const dados: any = {
+      nome: payload.nome,
+      email: payload.email,
+      perfil: payload.perfil,
+      ativo: payload.ativo,
+      foto: payload.foto,
+    }
+
+    // senha é OPCIONAL no update
+    if (payload.senha && payload.senha.trim() !== '') {
+      dados.senha = await bcrypt.hash(payload.senha, 10)
     }
 
     await this.repo.update(
       { user_id, idtb_empresas },
-      payload,
+      dados,
     )
 
     return { success: true }
   }
 
+  /* ======================================================
+   * REMOÇÃO LÓGICA
+   * ====================================================== */
   async remover(idtb_empresas: number, user_id: string) {
     await this.repo.update(
       { user_id, idtb_empresas },
