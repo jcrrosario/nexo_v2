@@ -7,12 +7,16 @@ import { EmpresaService } from '../empresa/empresa.service'
 @Injectable()
 export class EntityAuthService {
   constructor(
-    private usuarioService: UsuarioService,
-    private empresaService: EmpresaService,
-    private jwtService: JwtService,
+    private readonly usuarioService: UsuarioService,
+    private readonly empresaService: EmpresaService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async login(user_id: string, idtb_empresas: number, senha: string) {
+  async login(
+    user_id: string,
+    idtb_empresas: number,
+    senha: string,
+  ) {
     const empresa = await this.empresaService.findById(idtb_empresas)
 
     if (!empresa || empresa.ativa === 'Não') {
@@ -23,7 +27,7 @@ export class EntityAuthService {
 
     const usuario = await this.usuarioService.findByLogin(
       user_id,
-      idtb_empresas,
+      Number(idtb_empresas), // garante number
     )
 
     if (!usuario) {
