@@ -27,16 +27,16 @@ export class EntityAuthService {
 
     const usuario = await this.usuarioService.findByLogin(
       user_id,
-      Number(idtb_empresas), // garante number
+      idtb_empresas,
     )
 
     if (!usuario) {
       throw new UnauthorizedException('Credenciais inválidas')
     }
 
-    const match = await bcrypt.compare(senha, usuario.senha)
+    const senhaValida = await bcrypt.compare(senha, usuario.senha)
 
-    if (!match) {
+    if (!senhaValida) {
       throw new UnauthorizedException('Credenciais inválidas')
     }
 

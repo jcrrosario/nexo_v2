@@ -1,7 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FileText, FileSpreadsheet, Plus, X, Pencil } from 'lucide-react'
+import {
+  FileText,
+  FileSpreadsheet,
+  Plus,
+  X,
+  Pencil,
+  Trash2,
+} from 'lucide-react'
 import CrudLayout from '../../components/CrudLayout'
 import CrudTable from '../../components/CrudTable'
 import CrudPagination from '../../components/CrudPagination'
@@ -20,8 +27,10 @@ export default function UsuariosPage() {
   const [busca, setBusca] = useState('')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+
   const [open, setOpen] = useState(false)
   const [editando, setEditando] = useState(false)
+  const [confirmar, setConfirmar] = useState<Usuario | null>(null)
 
   const [form, setForm] = useState<any>({
     user_id: '',
@@ -30,7 +39,6 @@ export default function UsuariosPage() {
     senha: '',
     perfil: 'Usuario',
     ativo: 'Sim',
-    foto: null,
   })
 
   const pageSize = 5
@@ -55,20 +63,13 @@ export default function UsuariosPage() {
       senha: '',
       perfil: 'Usuario',
       ativo: 'Sim',
-      foto: null,
     })
     setEditando(false)
     setOpen(true)
   }
 
   function editarUsuario(usuario: Usuario) {
-    setForm({
-      user_id: usuario.user_id,
-      nome: usuario.nome,
-      email: usuario.email,
-      perfil: usuario.perfil,
-      ativo: usuario.ativo,
-    })
+    setForm(usuario)
     setEditando(true)
     setOpen(true)
   }
@@ -81,6 +82,14 @@ export default function UsuariosPage() {
     }
 
     setOpen(false)
+    carregar()
+  }
+
+  async function excluir() {
+    if (!confirmar) return
+
+    await api.put(`/entity/usuarios/${confirmar.user_id}/excluir`)
+    setConfirmar(null)
     carregar()
   }
 
@@ -125,12 +134,14 @@ export default function UsuariosPage() {
             key: 'actions',
             label: 'Ações',
             render: u => (
-              <button
-                style={btnEdit}
-                onClick={() => editarUsuario(u)}
-              >
-                <Pencil size={14} />
-              </button>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button style={btnIcon} onClick={() => editarUsuario(u)}>
+                  <Pencil size={14} />
+                </button>
+                <button style={btnDelete} onClick={() => setConfirmar(u)}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
             ),
           },
         ]}
@@ -143,6 +154,30 @@ export default function UsuariosPage() {
         pageSize={pageSize}
         onPageChange={setPage}
       />
+
+      {confirmar && (
+        <div style={overlay}>
+          <div style={modal}>
+            <h3>Confirmar exclusão</h3>
+
+            <p style={{ marginTop: 12, lineHeight: 1.5 }}>
+              Você está prestes a remover o acesso do usuário{' '}
+              <strong>{confirmar.nome}</strong>.
+              <br />
+              Os dados serão preservados para manter o histórico do sistema.
+            </p>
+
+            <div style={modalFooter}>
+              <button style={btnCancel} onClick={() => setConfirmar(null)}>
+                Cancelar
+              </button>
+              <button style={btnDelete} onClick={excluir}>
+                Confirmar exclusão
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {open && (
         <div style={overlay}>
@@ -201,8 +236,6 @@ export default function UsuariosPage() {
                 <option value="Sim">Ativo</option>
                 <option value="Não">Inativo</option>
               </select>
-
-              <input type="file" style={input} />
             </div>
 
             <div style={modalFooter}>
@@ -237,12 +270,19 @@ const btnExcel = { background: '#166534', color: '#fff', padding: '8px 14px', bo
 const btnDark = { background: '#0b1a3a', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
 const btnCancel = { background: '#e5e7eb', padding: '8px 14px', borderRadius: 6, border: 'none' }
 
-const btnEdit = {
+const btnIcon = {
   background: '#e5e7eb',
   border: 'none',
   borderRadius: 6,
   padding: 6,
-  cursor: 'pointer',
+}
+
+const btnDelete = {
+  background: '#dc2626',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 6,
+  padding: '6px 10px',
 }
 
 const badgeAtivo = { background: '#e7f6ec', color: '#1e7e34', padding: '4px 10px', borderRadius: 12 }
@@ -260,7 +300,7 @@ const overlay = {
 const modal = {
   background: '#fff',
   borderRadius: 12,
-  width: 520,
+  width: 420,
   padding: 24,
 }
 
@@ -273,7 +313,6 @@ const modalHeader = {
 
 const grid = {
   display: 'grid',
-  gridTemplateColumns: '1fr',
   gap: 12,
 }
 
@@ -281,7 +320,6 @@ const input = {
   padding: '10px 12px',
   borderRadius: 6,
   border: '1px solid #d1d5db',
-  fontSize: 14,
 }
 
 const modalFooter = {

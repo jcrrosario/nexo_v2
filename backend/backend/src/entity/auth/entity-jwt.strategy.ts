@@ -4,7 +4,10 @@ import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ENTITY_JWT_SECRET } from './entity-jwt.constants'
 
 @Injectable()
-export class EntityJwtStrategy extends PassportStrategy(Strategy) {
+export class EntityJwtStrategy extends PassportStrategy(
+  Strategy,
+  'entity-jwt',
+) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -13,6 +16,10 @@ export class EntityJwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    return payload
+    return {
+      user_id: payload.user_id,
+      idtb_empresas: payload.idtb_empresas,
+      type: payload.type,
+    }
   }
 }

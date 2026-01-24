@@ -3,90 +3,80 @@ import {
   Get,
   Post,
   Put,
-  Delete,
   Param,
   Body,
   Query,
   Req,
   UseGuards,
-  UseInterceptors,
-  UploadedFile,
 } from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
-import type { Express } from 'express'
-
 import { UsuarioService } from './usuario.service'
 import { EntityJwtGuard } from '../auth/entity-jwt.guard'
-import { usuarioUploadConfig } from './usuario-upload.config'
 
-@UseGuards(EntityJwtGuard)
 @Controller('entity/usuarios')
+@UseGuards(EntityJwtGuard)
 export class UsuarioController {
   constructor(private readonly service: UsuarioService) {}
 
-  /* ======================================================
-   * LISTAGEM
-   * ====================================================== */
   @Get()
   listar(
-    @Req() req,
+    @Req() req: any,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('search') search?: string,
   ) {
+    const { idtb_empresas } = req.user
+
     return this.service.listar(
-      req.user.idtb_empresas,
-      Number(page),
-      Number(limit),
+      Number(idtb_empresas),
+      +page,
+      +limit,
       search,
     )
   }
 
-  /* ======================================================
-   * CRIAÇÃO
-   * ====================================================== */
   @Post()
-  criar(@Req() req, @Body() body) {
-    return this.service.criar(req.user.idtb_empresas, body)
-  }
-
-  /* ======================================================
-   * UPLOAD DE FOTO
-   * ====================================================== */
-  @Post('upload-foto')
-  @UseInterceptors(
-    FileInterceptor('file', usuarioUploadConfig),
-  )
-  uploadFoto(
-    @Req() req,
-    @UploadedFile() file: Express.Multer.File,
+  criar(
+    @Req() req: any,
+    @Body() body: any,
   ) {
-    return {
-      url: `/uploads/empresas/${req.user.idtb_empresas}/usuarios/${file.filename}`,
-    }
+    const { idtb_empresas, user_id } = req.user
+
+    return this.service.criar({
+      ...body,
+      idtb_empresas,
+      user_id_log: user_id,
+    })
   }
 
-  /* ======================================================
-   * ATUALIZAÇÃO
-   * ====================================================== */
   @Put(':user_id')
   atualizar(
-    @Req() req,
+    @Req() req: any,
     @Param('user_id') user_id: string,
-    @Body() body,
+    @Body() body: any,
   ) {
+    const { idtb_empresas, user_id: userLog } = req.user
+
     return this.service.atualizar(
-      req.user.idtb_empresas,
       user_id,
-      body,
+      Number(idtb_empresas),
+      {
+        ...body,
+        user_id_log: userLog,
+      },
     )
   }
 
-  /* ======================================================
-   * REMOÇÃO LÓGICA
-   * ====================================================== */
-  @Delete(':user_id')
-  remover(@Req() req, @Param('user_id') user_id: string) {
-    return this.service.remover(req.user.idtb_empresas, user_id)
+  @Put(':user_id/excluir')
+  excluir(
+    @Req() req: any,
+    @Param('user_id') user_id: string,
+  ) {
+    const { idtb_empresas, user_id: userLog } = req.user
+
+    return this.service.excluir(
+      user_id,
+      Number(idtb_empresas),
+      userLog,
+    )
   }
 }

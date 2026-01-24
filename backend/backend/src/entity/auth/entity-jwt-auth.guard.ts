@@ -1,6 +1,3 @@
-// src/entity/auth/entity-jwt-auth.guard.ts
-// CRIAR ESTE ARQUIVO
-
 import { Injectable } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 

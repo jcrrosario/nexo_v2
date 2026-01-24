@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
-import { PassportModule } from '@nestjs/passport'
-
 import { EntityAuthService } from './entity-auth.service'
 import { EntityAuthController } from './entity-auth.controller'
 import { EntityJwtStrategy } from './entity-jwt.strategy'
@@ -13,13 +11,12 @@ import { EmpresaModule } from '../empresa/empresa.module'
   imports: [
     UsuarioModule,
     EmpresaModule,
-    PassportModule,
     JwtModule.register({
       secret: ENTITY_JWT_SECRET,
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  providers: [EntityAuthService, EntityJwtStrategy],
   controllers: [EntityAuthController],
+  providers: [EntityAuthService, EntityJwtStrategy],
 })
 export class EntityAuthModule {}
