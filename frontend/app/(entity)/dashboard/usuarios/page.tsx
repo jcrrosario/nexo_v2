@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FileText, FileSpreadsheet, Plus, X } from 'lucide-react'
+import { FileText, FileSpreadsheet, Plus, X, Pencil } from 'lucide-react'
 import CrudLayout from '../../components/CrudLayout'
 import CrudTable from '../../components/CrudTable'
 import CrudPagination from '../../components/CrudPagination'
@@ -21,6 +21,7 @@ export default function UsuariosPage() {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [open, setOpen] = useState(false)
+  const [editando, setEditando] = useState(false)
 
   const [form, setForm] = useState<any>({
     user_id: '',
@@ -46,9 +47,7 @@ export default function UsuariosPage() {
     carregar()
   }, [page, busca])
 
-  async function salvar() {
-    await api.post('/entity/usuarios', form)
-    setOpen(false)
+  function novoUsuario() {
     setForm({
       user_id: '',
       nome: '',
@@ -58,6 +57,30 @@ export default function UsuariosPage() {
       ativo: 'Sim',
       foto: null,
     })
+    setEditando(false)
+    setOpen(true)
+  }
+
+  function editarUsuario(usuario: Usuario) {
+    setForm({
+      user_id: usuario.user_id,
+      nome: usuario.nome,
+      email: usuario.email,
+      perfil: usuario.perfil,
+      ativo: usuario.ativo,
+    })
+    setEditando(true)
+    setOpen(true)
+  }
+
+  async function salvar() {
+    if (editando) {
+      await api.put(`/entity/usuarios/${form.user_id}`, form)
+    } else {
+      await api.post('/entity/usuarios', form)
+    }
+
+    setOpen(false)
     carregar()
   }
 
@@ -69,7 +92,7 @@ export default function UsuariosPage() {
         <div style={actions}>
           <button style={btnDark}><FileText size={16} /> PDF</button>
           <button style={btnExcel}><FileSpreadsheet size={16} /> Excel</button>
-          <button style={btnPrimary} onClick={() => setOpen(true)}>
+          <button style={btnPrimary} onClick={novoUsuario}>
             <Plus size={16} /> Novo usuário
           </button>
         </div>
@@ -98,7 +121,18 @@ export default function UsuariosPage() {
               </span>
             ),
           },
-          { key: 'actions', label: 'Ações' },
+          {
+            key: 'actions',
+            label: 'Ações',
+            render: u => (
+              <button
+                style={btnEdit}
+                onClick={() => editarUsuario(u)}
+              >
+                <Pencil size={14} />
+              </button>
+            ),
+          },
         ]}
         data={dados}
       />
@@ -110,27 +144,60 @@ export default function UsuariosPage() {
         onPageChange={setPage}
       />
 
-      {/* MODAL */}
       {open && (
         <div style={overlay}>
           <div style={modal}>
             <div style={modalHeader}>
-              <h2>Novo usuário</h2>
+              <h2>{editando ? 'Editar usuário' : 'Novo usuário'}</h2>
               <X onClick={() => setOpen(false)} style={{ cursor: 'pointer' }} />
             </div>
 
             <div style={grid}>
-              <input placeholder="Usuário" onChange={e => setForm({ ...form, user_id: e.target.value })} style={input} />
-              <input placeholder="Nome" onChange={e => setForm({ ...form, nome: e.target.value })} style={input} />
-              <input placeholder="E-mail" onChange={e => setForm({ ...form, email: e.target.value })} style={input} />
-              <input placeholder="Senha" type="password" onChange={e => setForm({ ...form, senha: e.target.value })} style={input} />
+              <input
+                placeholder="Usuário"
+                value={form.user_id}
+                disabled={editando}
+                onChange={e => setForm({ ...form, user_id: e.target.value })}
+                style={input}
+              />
 
-              <select onChange={e => setForm({ ...form, perfil: e.target.value })} style={input}>
+              <input
+                placeholder="Nome"
+                value={form.nome}
+                onChange={e => setForm({ ...form, nome: e.target.value })}
+                style={input}
+              />
+
+              <input
+                placeholder="E-mail"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                style={input}
+              />
+
+              {!editando && (
+                <input
+                  placeholder="Senha"
+                  type="password"
+                  onChange={e => setForm({ ...form, senha: e.target.value })}
+                  style={input}
+                />
+              )}
+
+              <select
+                value={form.perfil}
+                onChange={e => setForm({ ...form, perfil: e.target.value })}
+                style={input}
+              >
                 <option value="Usuario">Usuário</option>
                 <option value="Administrador">Administrador</option>
               </select>
 
-              <select onChange={e => setForm({ ...form, ativo: e.target.value })} style={input}>
+              <select
+                value={form.ativo}
+                onChange={e => setForm({ ...form, ativo: e.target.value })}
+                style={input}
+              >
                 <option value="Sim">Ativo</option>
                 <option value="Não">Inativo</option>
               </select>
@@ -139,8 +206,12 @@ export default function UsuariosPage() {
             </div>
 
             <div style={modalFooter}>
-              <button style={btnCancel} onClick={() => setOpen(false)}>Cancelar</button>
-              <button style={btnPrimary} onClick={salvar}>Salvar</button>
+              <button style={btnCancel} onClick={() => setOpen(false)}>
+                Cancelar
+              </button>
+              <button style={btnPrimary} onClick={salvar}>
+                Salvar
+              </button>
             </div>
           </div>
         </div>
@@ -165,6 +236,14 @@ const btnPrimary = { background: '#16a34a', color: '#fff', padding: '8px 14px', 
 const btnExcel = { background: '#166534', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
 const btnDark = { background: '#0b1a3a', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
 const btnCancel = { background: '#e5e7eb', padding: '8px 14px', borderRadius: 6, border: 'none' }
+
+const btnEdit = {
+  background: '#e5e7eb',
+  border: 'none',
+  borderRadius: 6,
+  padding: 6,
+  cursor: 'pointer',
+}
 
 const badgeAtivo = { background: '#e7f6ec', color: '#1e7e34', padding: '4px 10px', borderRadius: 12 }
 const badgeInativo = { background: '#fdecea', color: '#c62828', padding: '4px 10px', borderRadius: 12 }

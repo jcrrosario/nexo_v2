@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 type Column<T> = {
   key: keyof T | 'actions'
   label: string
@@ -40,10 +42,10 @@ export default function CrudTable<T extends Record<string, any>>({
           >
             {columns.map(col => (
               <td key={String(col.key)} style={td}>
-                {col.key === 'actions'
-                  ? '...'
-                  : col.render
+                {col.render
                   ? col.render(row)
+                  : col.key === 'actions'
+                  ? null
                   : row[col.key]}
               </td>
             ))}
