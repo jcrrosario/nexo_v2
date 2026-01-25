@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, CSSProperties } from 'react'
 import {
   FileText,
   FileSpreadsheet,
@@ -8,6 +8,7 @@ import {
   X,
   Pencil,
   Trash2,
+  Clock,
 } from 'lucide-react'
 import CrudLayout from '../../components/CrudLayout'
 import CrudTable from '../../components/CrudTable'
@@ -20,6 +21,9 @@ type Usuario = {
   email: string
   perfil: 'Administrador' | 'Usuario'
   ativo: 'Sim' | 'Não'
+  created_at: string
+  updated_at: string
+  user_id_log: string
 }
 
 export default function UsuariosPage() {
@@ -31,6 +35,7 @@ export default function UsuariosPage() {
   const [open, setOpen] = useState(false)
   const [editando, setEditando] = useState(false)
   const [confirmar, setConfirmar] = useState<Usuario | null>(null)
+  const [logUsuario, setLogUsuario] = useState<Usuario | null>(null)
 
   const [form, setForm] = useState<any>({
     user_id: '',
@@ -87,8 +92,7 @@ export default function UsuariosPage() {
 
   async function excluir() {
     if (!confirmar) return
-
-    await api.put(`/entity/usuarios/${confirmar.user_id}/excluir`)
+    await api.put(`/entity/usuarios/${confirmar.user_id}/excluir`, {})
     setConfirmar(null)
     carregar()
   }
@@ -126,7 +130,7 @@ export default function UsuariosPage() {
             label: 'Status',
             render: u => (
               <span style={u.ativo === 'Sim' ? badgeAtivo : badgeInativo}>
-                {u.ativo === 'Sim' ? 'Ativo' : 'Inativo'}
+                {u.ativo}
               </span>
             ),
           },
@@ -137,6 +141,9 @@ export default function UsuariosPage() {
               <div style={{ display: 'flex', gap: 6 }}>
                 <button style={btnIcon} onClick={() => editarUsuario(u)}>
                   <Pencil size={14} />
+                </button>
+                <button style={btnInfo} onClick={() => setLogUsuario(u)}>
+                  <Clock size={14} />
                 </button>
                 <button style={btnDelete} onClick={() => setConfirmar(u)}>
                   <Trash2 size={14} />
@@ -155,18 +162,46 @@ export default function UsuariosPage() {
         onPageChange={setPage}
       />
 
+      {logUsuario && (
+        <div style={overlay}>
+          <div style={modal}>
+            <div style={modalHeader}>
+              <h3>Log do registro</h3>
+              <X onClick={() => setLogUsuario(null)} />
+            </div>
+
+            <div style={grid}>
+              <div>
+                <strong>Criado em</strong>
+                <div>{new Date(logUsuario.created_at).toLocaleString()}</div>
+              </div>
+              <div>
+                <strong>Última atualização</strong>
+                <div>{new Date(logUsuario.updated_at).toLocaleString()}</div>
+              </div>
+              <div>
+                <strong>Alterado por</strong>
+                <div>{logUsuario.user_id_log || '-'}</div>
+              </div>
+            </div>
+
+            <div style={modalFooter}>
+              <button style={btnPrimary} onClick={() => setLogUsuario(null)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmar && (
         <div style={overlay}>
           <div style={modal}>
             <h3>Confirmar exclusão</h3>
-
-            <p style={{ marginTop: 12, lineHeight: 1.5 }}>
+            <p style={{ marginTop: 12 }}>
               Você está prestes a remover o acesso do usuário{' '}
               <strong>{confirmar.nome}</strong>.
-              <br />
-              Os dados serão preservados para manter o histórico do sistema.
             </p>
-
             <div style={modalFooter}>
               <button style={btnCancel} onClick={() => setConfirmar(null)}>
                 Cancelar
@@ -184,7 +219,7 @@ export default function UsuariosPage() {
           <div style={modal}>
             <div style={modalHeader}>
               <h2>{editando ? 'Editar usuário' : 'Novo usuário'}</h2>
-              <X onClick={() => setOpen(false)} style={{ cursor: 'pointer' }} />
+              <X onClick={() => setOpen(false)} />
             </div>
 
             <div style={grid}>
@@ -195,21 +230,18 @@ export default function UsuariosPage() {
                 onChange={e => setForm({ ...form, user_id: e.target.value })}
                 style={input}
               />
-
               <input
                 placeholder="Nome"
                 value={form.nome}
                 onChange={e => setForm({ ...form, nome: e.target.value })}
                 style={input}
               />
-
               <input
                 placeholder="E-mail"
                 value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 style={input}
               />
-
               {!editando && (
                 <input
                   placeholder="Senha"
@@ -218,7 +250,6 @@ export default function UsuariosPage() {
                   style={input}
                 />
               )}
-
               <select
                 value={form.perfil}
                 onChange={e => setForm({ ...form, perfil: e.target.value })}
@@ -227,7 +258,6 @@ export default function UsuariosPage() {
                 <option value="Usuario">Usuário</option>
                 <option value="Administrador">Administrador</option>
               </select>
-
               <select
                 value={form.ativo}
                 onChange={e => setForm({ ...form, ativo: e.target.value })}
@@ -255,7 +285,7 @@ export default function UsuariosPage() {
 
 /* ===== styles ===== */
 
-const search = {
+const search: CSSProperties = {
   width: 280,
   padding: '8px 12px',
   borderRadius: 6,
@@ -263,21 +293,29 @@ const search = {
   marginBottom: 16,
 }
 
-const actions = { display: 'flex', gap: 10 }
+const actions: CSSProperties = { display: 'flex', gap: 10 }
 
-const btnPrimary = { background: '#16a34a', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
-const btnExcel = { background: '#166534', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
-const btnDark = { background: '#0b1a3a', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
-const btnCancel = { background: '#e5e7eb', padding: '8px 14px', borderRadius: 6, border: 'none' }
+const btnPrimary: CSSProperties = { background: '#16a34a', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
+const btnExcel: CSSProperties = { background: '#166534', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
+const btnDark: CSSProperties = { background: '#0b1a3a', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
+const btnCancel: CSSProperties = { background: '#e5e7eb', padding: '8px 14px', borderRadius: 6, border: 'none' }
 
-const btnIcon = {
+const btnIcon: CSSProperties = {
   background: '#e5e7eb',
   border: 'none',
   borderRadius: 6,
   padding: 6,
 }
 
-const btnDelete = {
+const btnInfo: CSSProperties = {
+  background: '#0b1a3a',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 6,
+  padding: 6,
+}
+
+const btnDelete: CSSProperties = {
   background: '#dc2626',
   color: '#fff',
   border: 'none',
@@ -285,10 +323,10 @@ const btnDelete = {
   padding: '6px 10px',
 }
 
-const badgeAtivo = { background: '#e7f6ec', color: '#1e7e34', padding: '4px 10px', borderRadius: 12 }
-const badgeInativo = { background: '#fdecea', color: '#c62828', padding: '4px 10px', borderRadius: 12 }
+const badgeAtivo: CSSProperties = { background: '#e7f6ec', color: '#1e7e34', padding: '4px 10px', borderRadius: 12 }
+const badgeInativo: CSSProperties = { background: '#fdecea', color: '#c62828', padding: '4px 10px', borderRadius: 12 }
 
-const overlay = {
+const overlay: CSSProperties = {
   position: 'fixed',
   inset: 0,
   background: 'rgba(0,0,0,0.4)',
@@ -297,32 +335,32 @@ const overlay = {
   alignItems: 'center',
 }
 
-const modal = {
+const modal: CSSProperties = {
   background: '#fff',
   borderRadius: 12,
   width: 420,
   padding: 24,
 }
 
-const modalHeader = {
+const modalHeader: CSSProperties = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
   marginBottom: 16,
 }
 
-const grid = {
+const grid: CSSProperties = {
   display: 'grid',
   gap: 12,
 }
 
-const input = {
+const input: CSSProperties = {
   padding: '10px 12px',
   borderRadius: 6,
   border: '1px solid #d1d5db',
 }
 
-const modalFooter = {
+const modalFooter: CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: 10,

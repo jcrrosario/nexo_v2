@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import * as bcrypt from 'bcrypt'
 import { UsuarioEntity } from './usuario.entity'
 
 @Injectable()
@@ -49,6 +50,12 @@ export class UsuarioService {
   }
 
   async criar(data: any) {
+    // 🔐 criptografa a senha SEMPRE
+    if (data.senha) {
+      const salt = await bcrypt.genSalt(10)
+      data.senha = await bcrypt.hash(data.senha, salt)
+    }
+
     const usuario = this.repo.create(data)
     return this.repo.save(usuario)
   }
@@ -66,9 +73,10 @@ export class UsuarioService {
       throw new NotFoundException('Usuário não encontrado')
     }
 
+    // ⚠️ senha não é alterada aqui
     delete data.senha
-    Object.assign(usuario, data)
 
+    Object.assign(usuario, data)
     return this.repo.save(usuario)
   }
 
