@@ -10,6 +10,8 @@ import {
   Trash2,
   Clock,
 } from 'lucide-react'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import CrudLayout from '../../components/CrudLayout'
 import CrudTable from '../../components/CrudTable'
 import CrudPagination from '../../components/CrudPagination'
@@ -60,6 +62,58 @@ export default function UsuariosPage() {
     carregar()
   }, [page, busca])
 
+  function gerarPDF() {
+    const doc = new jsPDF()
+
+    doc.setFontSize(18)
+    doc.text('Relatório de Usuários', 14, 20)
+
+    doc.setFontSize(11)
+    doc.setTextColor(100)
+    doc.text(
+      `Gerado em: ${new Date().toLocaleString()}`,
+      14,
+      28,
+    )
+
+    autoTable(doc, {
+      startY: 36,
+      head: [['Nome', 'E-mail', 'Perfil', 'Status']],
+      body: dados.map(u => [
+        u.nome,
+        u.email,
+        u.perfil,
+        u.ativo === 'Sim' ? 'Ativo' : 'Inativo',
+      ]),
+      styles: {
+        fontSize: 10,
+        cellPadding: 6,
+      },
+      headStyles: {
+        fillColor: [11, 26, 58],
+        textColor: 255,
+      },
+      alternateRowStyles: {
+        fillColor: [245, 247, 250],
+      },
+    })
+
+    const totalPages = doc.getNumberOfPages()
+
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i)
+      doc.setFontSize(9)
+      doc.setTextColor(120)
+      doc.text(
+        `Página ${i} de ${totalPages}`,
+        doc.internal.pageSize.width - 40,
+        doc.internal.pageSize.height - 10,
+      )
+    }
+
+    doc.save('usuarios.pdf')
+  }
+
   function novoUsuario() {
     setForm({
       user_id: '',
@@ -103,8 +157,12 @@ export default function UsuariosPage() {
       subtitle="Gerencie os usuários do sistema"
       actions={
         <div style={actions}>
-          <button style={btnDark}><FileText size={16} /> PDF</button>
-          <button style={btnExcel}><FileSpreadsheet size={16} /> Excel</button>
+          <button style={btnDark} onClick={gerarPDF}>
+            <FileText size={16} /> PDF
+          </button>
+          <button style={btnExcel}>
+            <FileSpreadsheet size={16} /> Excel
+          </button>
           <button style={btnPrimary} onClick={novoUsuario}>
             <Plus size={16} /> Novo usuário
           </button>
@@ -161,124 +219,6 @@ export default function UsuariosPage() {
         pageSize={pageSize}
         onPageChange={setPage}
       />
-
-      {logUsuario && (
-        <div style={overlay}>
-          <div style={modal}>
-            <div style={modalHeader}>
-              <h3>Log do registro</h3>
-              <X onClick={() => setLogUsuario(null)} />
-            </div>
-
-            <div style={grid}>
-              <div>
-                <strong>Criado em</strong>
-                <div>{new Date(logUsuario.created_at).toLocaleString()}</div>
-              </div>
-              <div>
-                <strong>Última atualização</strong>
-                <div>{new Date(logUsuario.updated_at).toLocaleString()}</div>
-              </div>
-              <div>
-                <strong>Alterado por</strong>
-                <div>{logUsuario.user_id_log || '-'}</div>
-              </div>
-            </div>
-
-            <div style={modalFooter}>
-              <button style={btnPrimary} onClick={() => setLogUsuario(null)}>
-                Fechar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {confirmar && (
-        <div style={overlay}>
-          <div style={modal}>
-            <h3>Confirmar exclusão</h3>
-            <p style={{ marginTop: 12 }}>
-              Você está prestes a remover o acesso do usuário{' '}
-              <strong>{confirmar.nome}</strong>.
-            </p>
-            <div style={modalFooter}>
-              <button style={btnCancel} onClick={() => setConfirmar(null)}>
-                Cancelar
-              </button>
-              <button style={btnDelete} onClick={excluir}>
-                Confirmar exclusão
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {open && (
-        <div style={overlay}>
-          <div style={modal}>
-            <div style={modalHeader}>
-              <h2>{editando ? 'Editar usuário' : 'Novo usuário'}</h2>
-              <X onClick={() => setOpen(false)} />
-            </div>
-
-            <div style={grid}>
-              <input
-                placeholder="Usuário"
-                value={form.user_id}
-                disabled={editando}
-                onChange={e => setForm({ ...form, user_id: e.target.value })}
-                style={input}
-              />
-              <input
-                placeholder="Nome"
-                value={form.nome}
-                onChange={e => setForm({ ...form, nome: e.target.value })}
-                style={input}
-              />
-              <input
-                placeholder="E-mail"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                style={input}
-              />
-              {!editando && (
-                <input
-                  placeholder="Senha"
-                  type="password"
-                  onChange={e => setForm({ ...form, senha: e.target.value })}
-                  style={input}
-                />
-              )}
-              <select
-                value={form.perfil}
-                onChange={e => setForm({ ...form, perfil: e.target.value })}
-                style={input}
-              >
-                <option value="Usuario">Usuário</option>
-                <option value="Administrador">Administrador</option>
-              </select>
-              <select
-                value={form.ativo}
-                onChange={e => setForm({ ...form, ativo: e.target.value })}
-                style={input}
-              >
-                <option value="Sim">Ativo</option>
-                <option value="Não">Inativo</option>
-              </select>
-            </div>
-
-            <div style={modalFooter}>
-              <button style={btnCancel} onClick={() => setOpen(false)}>
-                Cancelar
-              </button>
-              <button style={btnPrimary} onClick={salvar}>
-                Salvar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </CrudLayout>
   )
 }
@@ -298,7 +238,6 @@ const actions: CSSProperties = { display: 'flex', gap: 10 }
 const btnPrimary: CSSProperties = { background: '#16a34a', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
 const btnExcel: CSSProperties = { background: '#166534', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
 const btnDark: CSSProperties = { background: '#0b1a3a', color: '#fff', padding: '8px 14px', borderRadius: 6, border: 'none' }
-const btnCancel: CSSProperties = { background: '#e5e7eb', padding: '8px 14px', borderRadius: 6, border: 'none' }
 
 const btnIcon: CSSProperties = {
   background: '#e5e7eb',
@@ -325,44 +264,3 @@ const btnDelete: CSSProperties = {
 
 const badgeAtivo: CSSProperties = { background: '#e7f6ec', color: '#1e7e34', padding: '4px 10px', borderRadius: 12 }
 const badgeInativo: CSSProperties = { background: '#fdecea', color: '#c62828', padding: '4px 10px', borderRadius: 12 }
-
-const overlay: CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  background: 'rgba(0,0,0,0.4)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-}
-
-const modal: CSSProperties = {
-  background: '#fff',
-  borderRadius: 12,
-  width: 420,
-  padding: 24,
-}
-
-const modalHeader: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: 16,
-}
-
-const grid: CSSProperties = {
-  display: 'grid',
-  gap: 12,
-}
-
-const input: CSSProperties = {
-  padding: '10px 12px',
-  borderRadius: 6,
-  border: '1px solid #d1d5db',
-}
-
-const modalFooter: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: 10,
-  marginTop: 20,
-}
