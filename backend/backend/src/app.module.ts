@@ -7,6 +7,7 @@ import { AdminModule } from './admin/admin.module'
 import { AdminAuthModule } from './auth/admin-auth/admin-auth.module'
 import { EntityAuthModule } from './entity/auth/entity-auth.module'
 import { EmpresaModule } from './entity/empresa/empresa.module'
+import { DepartamentoModule } from './entity/departamento/departamento.module'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { EmpresaModule } from './entity/empresa/empresa.module'
     AdminAuthModule,
     EmpresaModule,
     EntityAuthModule,
+    DepartamentoModule,
   ],
 })
 export class AppModule {}

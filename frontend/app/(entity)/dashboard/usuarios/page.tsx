@@ -162,8 +162,8 @@ export default function UsuariosPage() {
 
   return (
     <CrudLayout
-      title="Usuários"
-      subtitle="Gerencie os usuários do sistema"
+      title="Funcionários/Usuários"
+      subtitle="Gerencie os funcionários/usuários do sistema"
       actions={
         <div style={actions}>
           <button style={btnDark} onClick={gerarPDF}>

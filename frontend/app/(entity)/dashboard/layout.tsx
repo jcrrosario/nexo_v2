@@ -8,6 +8,7 @@ import {
   Users,
   Building2,
   Briefcase,
+  Network,
   AlertTriangle,
   Flame,
   Factory,
@@ -97,26 +98,76 @@ export default function EntityLayout({
 
             {!collapsed && openMenu === 'cadastros' && (
               <div style={submenu}>
+                {/* FUNCIONÁRIOS / USUÁRIOS */}
                 <div
                   style={{
                     ...submenuItem,
-                    ...(isActive('/dashboard/usuarios') ? submenuActive : {}),
+                    ...(isActive('/dashboard/usuarios')
+                      ? submenuActive
+                      : {}),
                   }}
                   onClick={() => router.push('/dashboard/usuarios')}
                 >
-                  <Users size={16} /> Usuários
+                  <Users size={16} /> Funcionários/Usuários
                 </div>
 
-                <div style={submenuItem}><Building2 size={16} /> Departamentos</div>
-                <div style={submenuItem}><Briefcase size={16} /> Função</div>
-                <div style={submenuItem}><AlertTriangle size={16} /> Categoria de risco</div>
-                <div style={submenuItem}><Flame size={16} /> Fator de risco</div>
-                <div style={submenuItem}><Factory size={16} /> Fonte geradora</div>
-                <div style={submenuItem}><ShieldAlert size={16} /> Danos</div>
-                <div style={submenuItem}><Wrench size={16} /> Medidas adm / técnicas</div>
-                <div style={submenuItem}><HardHat size={16} /> EPC</div>
-                <div style={submenuItem}><HardHat size={16} /> EPI</div>
-                <div style={submenuItem}><Search size={16} /> Layout de pesquisa</div>
+                {/* DEPARTAMENTOS */}
+                <div
+                  style={{
+                    ...submenuItem,
+                    ...(isActive('/dashboard/departamentos')
+                      ? submenuActive
+                      : {}),
+                  }}
+                  onClick={() => router.push('/dashboard/departamentos')}
+                >
+                  <Building2 size={16} /> Departamentos
+                </div>
+
+                {/* FUNÇÃO */}
+                <div style={submenuItem}>
+                  <Briefcase size={16} /> Função
+                </div>
+
+                {/* VINCULAÇÃO ORGANIZACIONAL */}
+                <div
+                  style={{
+                    ...submenuItem,
+                    ...(isActive('/dashboard/vinculacao-organizacional')
+                      ? submenuActive
+                      : {}),
+                  }}
+                  onClick={() =>
+                    router.push('/dashboard/vinculacao-organizacional')
+                  }
+                >
+                  <Network size={16} /> Vinculação Organizacional
+                </div>
+
+                <div style={submenuItem}>
+                  <AlertTriangle size={16} /> Categoria de risco
+                </div>
+                <div style={submenuItem}>
+                  <Flame size={16} /> Fator de risco
+                </div>
+                <div style={submenuItem}>
+                  <Factory size={16} /> Fonte geradora
+                </div>
+                <div style={submenuItem}>
+                  <ShieldAlert size={16} /> Danos
+                </div>
+                <div style={submenuItem}>
+                  <Wrench size={16} /> Medidas adm / técnicas
+                </div>
+                <div style={submenuItem}>
+                  <HardHat size={16} /> EPC
+                </div>
+                <div style={submenuItem}>
+                  <HardHat size={16} /> EPI
+                </div>
+                <div style={submenuItem}>
+                  <Search size={16} /> Layout de pesquisa
+                </div>
               </div>
             )}
           </div>
@@ -159,7 +210,7 @@ export default function EntityLayout({
         </nav>
       </aside>
 
-      {/* CONTEÚDO – LIMPO, SEM INTERFERÊNCIA */}
+      {/* CONTEÚDO */}
       <div style={content}>
         <EntityHeader />
         <main style={main}>{children}</main>
