@@ -16,7 +16,7 @@ export class UsuarioService {
   ) {}
 
   /* =====================================================
-   * LISTAGEM (CRUD + GRID)
+   * LISTAGEM
    * ===================================================== */
   async listar(
     idtb_empresas: number,
@@ -45,7 +45,7 @@ export class UsuarioService {
   }
 
   /* =====================================================
-   * LOGIN (ENTITY AUTH)
+   * LOGIN
    * ===================================================== */
   async findByLogin(user_id: string, idtb_empresas: number) {
     return this.repo.findOne({
@@ -69,8 +69,22 @@ export class UsuarioService {
       throw new BadRequestException('O campo senha é obrigatório.')
     }
 
-    data.senha = await bcrypt.hash(data.senha, 10)
+    // 🔒 valida e-mail duplicado na mesma empresa
+    const emailExistente = await this.repo.findOne({
+      where: {
+        email: data.email,
+        idtb_empresas: data.idtb_empresas,
+        excluido: 'Não',
+      },
+    })
 
+    if (emailExistente) {
+      throw new BadRequestException(
+        'Já existe um usuário cadastrado com este e-mail.',
+      )
+    }
+
+    data.senha = await bcrypt.hash(data.senha, 10)
     return this.repo.save(this.repo.create(data))
   }
 
@@ -94,7 +108,22 @@ export class UsuarioService {
       throw new NotFoundException('Usuário não encontrado')
     }
 
-    delete data.senha // nunca atualiza senha aqui
+    // 🔒 valida e-mail duplicado (ignorando o próprio usuário)
+    const emailExistente = await this.repo.findOne({
+      where: {
+        email: data.email,
+        idtb_empresas,
+        excluido: 'Não',
+      },
+    })
+
+    if (emailExistente && emailExistente.user_id !== user_id) {
+      throw new BadRequestException(
+        'Já existe um usuário cadastrado com este e-mail.',
+      )
+    }
+
+    delete data.senha
 
     Object.assign(usuario, data)
     return this.repo.save(usuario)

@@ -24,6 +24,7 @@ type Usuario = {
   email: string
   perfil: 'Administrador' | 'Usuario'
   ativo: 'Sim' | 'Não'
+  foto?: string
   created_at: string
   updated_at: string
   user_id_log: string
@@ -47,6 +48,7 @@ export default function UsuariosPage() {
     senha: '',
     perfil: 'Usuario',
     ativo: 'Sim',
+    foto: '',
   })
 
   const pageSize = 5
@@ -71,6 +73,7 @@ export default function UsuariosPage() {
       senha: '',
       perfil: 'Usuario',
       ativo: 'Sim',
+      foto: '',
     })
     setEditando(false)
     setOpen(true)
@@ -88,14 +91,36 @@ export default function UsuariosPage() {
       return
     }
 
-    if (editando) {
-      await api.put(`/entity/usuarios/${form.user_id}`, form)
-    } else {
-      await api.post('/entity/usuarios', form)
-    }
+    try {
+      if (editando) {
+        await api.put(`/entity/usuarios/${form.user_id}`, form)
+      } else {
+        await api.post('/entity/usuarios', form)
+      }
 
-    setOpen(false)
-    carregar()
+      setOpen(false)
+      carregar()
+    } catch (err: any) {
+      const data = err?.response?.data
+
+      const textoErro =
+        typeof data === 'string'
+          ? data
+          : Array.isArray(data?.message)
+          ? data.message.join(' ')
+          : data?.message || ''
+
+      if (textoErro.toLowerCase().includes('email')) {
+        alert(
+          'Não foi possível salvar o registro pois o e-mail informado já está cadastrado no sistema.',
+        )
+        return
+      }
+
+      alert(
+        'Não foi possível salvar o registro. Verifique os dados e tente novamente.',
+      )
+    }
   }
 
   async function excluir() {
@@ -107,12 +132,9 @@ export default function UsuariosPage() {
 
   function gerarPDF() {
     const doc = new jsPDF()
-
     doc.setFontSize(18)
     doc.text('Relatório de Usuários', 14, 20)
-
     doc.setFontSize(11)
-    doc.setTextColor(100)
     doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 28)
 
     autoTable(doc, {
@@ -124,32 +146,22 @@ export default function UsuariosPage() {
         u.perfil,
         u.ativo === 'Sim' ? 'Ativo' : 'Inativo',
       ]),
-      styles: {
-        fontSize: 10,
-        cellPadding: 6,
-      },
-      headStyles: {
-        fillColor: [11, 26, 58],
-        textColor: 255,
-        fontStyle: 'bold',
-      },
-      alternateRowStyles: {
-        fillColor: [245, 247, 250],
-      },
+      headStyles: { fillColor: [11, 26, 58], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
     })
 
     doc.save('usuarios.pdf')
   }
 
   function gerarExcel() {
-    const worksheetData = dados.map(u => ({
-      Nome: u.nome,
-      Email: u.email,
-      Perfil: u.perfil,
-      Status: u.ativo,
-    }))
-
-    const ws = XLSX.utils.json_to_sheet(worksheetData)
+    const ws = XLSX.utils.json_to_sheet(
+      dados.map(u => ({
+        Nome: u.nome,
+        Email: u.email,
+        Perfil: u.perfil,
+        Status: u.ativo,
+      })),
+    )
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Usuários')
     XLSX.writeFile(wb, 'usuarios.xlsx')
@@ -187,12 +199,13 @@ export default function UsuariosPage() {
         columns={[
           { key: 'nome', label: 'Nome' },
           { key: 'email', label: 'E-mail' },
+          { key: 'perfil', label: 'Perfil' },
           {
             key: 'ativo',
             label: 'Status',
             render: u => (
               <span style={u.ativo === 'Sim' ? badgeAtivo : badgeInativo}>
-                {u.ativo === 'Sim' ? 'Ativo' : 'Inativo'}
+                {u.ativo}
               </span>
             ),
           },
@@ -273,9 +286,7 @@ export default function UsuariosPage() {
                 placeholder="Usuário"
                 value={form.user_id}
                 disabled={editando}
-                onChange={e =>
-                  setForm({ ...form, user_id: e.target.value })
-                }
+                onChange={e => setForm({ ...form, user_id: e.target.value })}
                 style={input}
               />
 
@@ -297,12 +308,28 @@ export default function UsuariosPage() {
                 <input
                   placeholder="Senha"
                   type="password"
-                  onChange={e =>
-                    setForm({ ...form, senha: e.target.value })
-                  }
+                  onChange={e => setForm({ ...form, senha: e.target.value })}
                   style={input}
                 />
               )}
+
+              <select
+                value={form.perfil}
+                onChange={e => setForm({ ...form, perfil: e.target.value })}
+                style={input}
+              >
+                <option value="Usuario">Usuário</option>
+                <option value="Administrador">Administrador</option>
+              </select>
+
+              <select
+                value={form.ativo}
+                onChange={e => setForm({ ...form, ativo: e.target.value })}
+                style={input}
+              >
+                <option value="Sim">Ativo</option>
+                <option value="Não">Inativo</option>
+              </select>
             </div>
 
             <div style={modalFooter}>
