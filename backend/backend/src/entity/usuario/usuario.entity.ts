@@ -17,7 +17,7 @@ export class UsuarioEntity {
   @Column({ length: 150 })
   nome: string
 
-  @Column({ length: 150 })
+  @Column({ nullable: false })
   email: string
 
   @Column({ length: 255 })
