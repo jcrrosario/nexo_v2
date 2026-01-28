@@ -1,0 +1,34 @@
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm'
+
+@Entity('tb_funcao')
+export class FuncaoEntity {
+  @PrimaryGeneratedColumn()
+  func_id: number
+
+  @Column()
+  idtb_empresas: number
+
+  @Column({ length: 150 })
+  nome: string
+
+  @CreateDateColumn({ type: 'timestamp without time zone' })
+  created_at: Date
+
+  @UpdateDateColumn({
+    type: 'timestamp without time zone',
+    nullable: true,
+  })
+  updated_at: Date
+
+  @Column({ length: 50 })
+  user_id_log: string
+
+  @Column({ length: 3, default: 'Nao' })
+  excluido: string
+}

@@ -8,6 +8,7 @@ import { AdminAuthModule } from './auth/admin-auth/admin-auth.module'
 import { EntityAuthModule } from './entity/auth/entity-auth.module'
 import { EmpresaModule } from './entity/empresa/empresa.module'
 import { DepartamentoModule } from './entity/departamento/departamento.module'
+import { FuncaoModule } from './entity/funcao/funcao.module' // 👈 INCLUSÃO
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { DepartamentoModule } from './entity/departamento/departamento.module'
     EmpresaModule,
     EntityAuthModule,
     DepartamentoModule,
+    FuncaoModule, // 👈 REGISTRO DO MÓDULO
   ],
 })
 export class AppModule {}

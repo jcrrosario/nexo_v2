@@ -124,9 +124,17 @@ export default function EntityLayout({
                   <Building2 size={16} /> Departamentos
                 </div>
 
-                {/* FUNÇÃO */}
-                <div style={submenuItem}>
-                  <Briefcase size={16} /> Função
+                {/* FUNÇÕES */}
+                <div
+                  style={{
+                    ...submenuItem,
+                    ...(isActive('/dashboard/funcoes')
+                      ? submenuActive
+                      : {}),
+                  }}
+                  onClick={() => router.push('/dashboard/funcoes')}
+                >
+                  <Briefcase size={16} /> Funções
                 </div>
 
                 {/* VINCULAÇÃO ORGANIZACIONAL */}
