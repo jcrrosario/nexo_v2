@@ -9,6 +9,8 @@ import { EntityAuthModule } from './entity/auth/entity-auth.module'
 import { EmpresaModule } from './entity/empresa/empresa.module'
 import { DepartamentoModule } from './entity/departamento/departamento.module'
 import { FuncaoModule } from './entity/funcao/funcao.module' // 👈 INCLUSÃO
+import { VinculacaoModule } from './entity/vinculacao/vinculacao.module'
+
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import { FuncaoModule } from './entity/funcao/funcao.module' // 👈 INCLUSÃO
     EmpresaModule,
     EntityAuthModule,
     DepartamentoModule,
+    VinculacaoModule,
     FuncaoModule, // 👈 REGISTRO DO MÓDULO
   ],
 })
