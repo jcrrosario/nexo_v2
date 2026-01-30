@@ -33,7 +33,8 @@ export class VinculacaoService {
         f.nome AS funcao,
         u.user_id,
         u.nome AS usuario,
-        v.percentual_alocacao
+        v.percentual_alocacao,
+        v.custo_mensal
       FROM tb_vinculacao v
       JOIN tb_departamentos d 
         ON d.dpto_id = v.dpto_id 
@@ -83,7 +84,8 @@ export class VinculacaoService {
       func.usuarios.push({
         user_id: r.user_id,
         nome: r.usuario,
-        percentual_alocacao: r.percentual_alocacao,
+        percentual_alocacao: Number(r.percentual_alocacao),
+        custo_mensal: Number(r.custo_mensal),
       })
     }
 
@@ -129,12 +131,17 @@ export class VinculacaoService {
       func_id: number
       user_id: string
       percentual_alocacao: number
+      custo_mensal: number
     },
     empresaId: number,
     userLog: string,
   ) {
     const vinc = this.vinculacaoRepo.create({
-      ...data,
+      dpto_id: data.dpto_id,
+      func_id: data.func_id,
+      user_id: data.user_id,
+      percentual_alocacao: data.percentual_alocacao,
+      custo_mensal: Number(data.custo_mensal),
       empresa_id: empresaId,
       user_id_log: userLog,
       excluido: 'Nao',
