@@ -27,7 +27,9 @@ export default function VinculacaoOrganizacionalPage() {
   const [openDptos, setOpenDptos] = useState<number[]>([])
   const [openFuncoes, setOpenFuncoes] = useState<number[]>([])
   const [showModal, setShowModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [editando, setEditando] = useState<any | null>(null)
+  const [vinculoExcluir, setVinculoExcluir] = useState<number | null>(null)
 
   const [form, setForm] = useState({
     vinculacao_id: null as number | null,
@@ -114,25 +116,32 @@ export default function VinculacaoOrganizacionalPage() {
     carregarHierarquia()
   }
 
-  async function excluir(id: number) {
-    if (!confirm('Deseja realmente excluir este vínculo?')) return
+  function solicitarExclusao(id: number) {
+    setVinculoExcluir(id)
+    setShowDeleteModal(true)
+  }
+
+  async function confirmarExclusao() {
+    if (!vinculoExcluir) return
 
     const token = localStorage.getItem('entity_token')
 
     await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/entity/vinculacao/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/entity/vinculacao/${vinculoExcluir}`,
       {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       },
     )
 
+    setShowDeleteModal(false)
+    setVinculoExcluir(null)
     carregarHierarquia()
   }
 
   return (
     <div>
-      <div style={header}>
+      <div style={topHeader}>
         <h1 style={title}>Vinculação Organizacional</h1>
         <button style={btnNovo} onClick={abrirNovo}>
           <Plus size={14} /> Novo vínculo
@@ -191,9 +200,11 @@ export default function VinculacaoOrganizacionalPage() {
                         <div key={u.vinculacao_id} style={usuarioRow}>
                           <Users size={14} />
                           <span style={nome}>{u.nome}</span>
+
                           <span style={percentual}>
                             {u.percentual_alocacao}%
                           </span>
+
                           <span style={valor}>
                             {moeda(u.custo_mensal)}
                           </span>
@@ -207,7 +218,9 @@ export default function VinculacaoOrganizacionalPage() {
 
                           <button
                             style={btnExcluir}
-                            onClick={() => excluir(u.vinculacao_id)}
+                            onClick={() =>
+                              solicitarExclusao(u.vinculacao_id)
+                            }
                           >
                             <Trash2 size={14} />
                           </button>
@@ -285,6 +298,7 @@ export default function VinculacaoOrganizacionalPage() {
                 type="number"
                 min={0}
                 max={100}
+                placeholder="% de participação nessa função. Exemplo 100%"
                 value={form.percentual_alocacao}
                 onChange={e =>
                   setForm({
@@ -298,6 +312,7 @@ export default function VinculacaoOrganizacionalPage() {
                 style={input}
                 type="number"
                 step="0.01"
+                placeholder="Custo mensal (R$)"
                 value={form.custo_mensal}
                 onChange={e =>
                   setForm({
@@ -322,13 +337,38 @@ export default function VinculacaoOrganizacionalPage() {
           </div>
         </div>
       )}
+
+      {showDeleteModal && (
+        <div style={overlay}>
+          <div style={deleteModal}>
+            <h2 style={{ marginBottom: 12 }}>Confirmar exclusão</h2>
+            <p style={{ marginBottom: 20 }}>
+              Deseja realmente excluir este vínculo?
+            </p>
+            <div style={deleteFooter}>
+              <button
+                style={btnCancelar}
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                style={btnConfirmar}
+                onClick={confirmarExclusao}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-/* ---------- STYLES ORIGINAIS ---------- */
+/* ---------- STYLES ---------- */
 
-const header = {
+const topHeader = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -388,7 +428,7 @@ const funcaoHeader = {
 
 const usuarioRow = {
   display: 'grid',
-  gridTemplateColumns: 'auto 1fr 80px 120px 36px 36px',
+  gridTemplateColumns: 'auto 1fr 90px 120px 36px 36px',
   alignItems: 'center',
   gap: 8,
   marginLeft: 34,
@@ -513,4 +553,28 @@ const btnSalvar = {
   background: '#16a34a',
   color: '#fff',
   cursor: 'pointer',
+}
+
+const deleteModal = {
+  background: '#fff',
+  width: 420,
+  borderRadius: 16,
+  padding: 24,
+  boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+}
+
+const deleteFooter = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: 12,
+}
+
+const btnConfirmar = {
+  padding: '8px 16px',
+  borderRadius: 8,
+  border: 'none',
+  background: '#dc2626',
+  color: '#fff',
+  cursor: 'pointer',
+  fontWeight: 600,
 }

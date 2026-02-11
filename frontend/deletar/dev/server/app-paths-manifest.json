@@ -1,8 +1,0 @@
-{
-  "/(entity)/dashboard/departamentos/page": "app/(entity)/dashboard/departamentos/page.js",
-  "/(entity)/dashboard/funcoes/page": "app/(entity)/dashboard/funcoes/page.js",
-  "/(entity)/dashboard/page": "app/(entity)/dashboard/page.js",
-  "/(entity)/dashboard/usuarios/page": "app/(entity)/dashboard/usuarios/page.js",
-  "/(entity)/dashboard/vinculacao-organizacional/page": "app/(entity)/dashboard/vinculacao-organizacional/page.js",
-  "/(public)/login/page": "app/(public)/login/page.js"
-}

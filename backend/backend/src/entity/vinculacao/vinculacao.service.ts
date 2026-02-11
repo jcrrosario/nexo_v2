@@ -98,21 +98,21 @@ export class VinculacaoService {
     const departamentos = await this.departamentoRepo
       .createQueryBuilder('d')
       .where('d.idtb_empresas = :empresaId', { empresaId })
-      .andWhere("d.excluido IS NULL OR d.excluido <> 'Sim'")
+      .andWhere("(d.excluido IS NULL OR d.excluido <> 'Sim')")
       .orderBy('d.nome', 'ASC')
       .getMany()
 
     const funcoes = await this.funcaoRepo
       .createQueryBuilder('f')
       .where('f.idtb_empresas = :empresaId', { empresaId })
-      .andWhere("f.excluido IS NULL OR f.excluido <> 'Sim'")
+      .andWhere("(f.excluido IS NULL OR f.excluido <> 'Sim')")
       .orderBy('f.nome', 'ASC')
       .getMany()
 
     const usuarios = await this.usuarioRepo
       .createQueryBuilder('u')
       .where('u.idtb_empresas = :empresaId', { empresaId })
-      .andWhere("u.excluido IS NULL OR u.excluido <> 'Sim'")
+      .andWhere("(u.excluido IS NULL OR u.excluido <> 'Sim')")
       .orderBy('u.nome', 'ASC')
       .select(['u.user_id', 'u.nome'])
       .getMany()
