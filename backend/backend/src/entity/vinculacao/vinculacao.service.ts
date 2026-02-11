@@ -33,6 +33,7 @@ export class VinculacaoService {
         f.nome AS funcao,
         u.user_id,
         u.nome AS usuario,
+        v.vinculacao_id,
         v.percentual_alocacao,
         v.custo_mensal
       FROM tb_vinculacao v
@@ -46,10 +47,10 @@ export class VinculacaoService {
         ON u.user_id = v.user_id 
        AND u.idtb_empresas = v.empresa_id
       WHERE v.empresa_id = $1
-        AND v.excluido = 'Nao'
-        AND d.excluido = 'Não'
-        AND f.excluido = 'Nao'
-        AND u.excluido = 'Não'
+        AND (v.excluido IS NULL OR v.excluido <> 'Sim')
+        AND (d.excluido IS NULL OR d.excluido <> 'Sim')
+        AND (f.excluido IS NULL OR f.excluido <> 'Sim')
+        AND (u.excluido IS NULL OR u.excluido <> 'Sim')
       ORDER BY d.nome, f.nome, u.nome
       `,
       [empresaId],
@@ -82,6 +83,7 @@ export class VinculacaoService {
       }
 
       func.usuarios.push({
+        vinculacao_id: r.vinculacao_id,
         user_id: r.user_id,
         nome: r.usuario,
         percentual_alocacao: Number(r.percentual_alocacao),
@@ -93,30 +95,27 @@ export class VinculacaoService {
   }
 
   async getCombos(empresaId: number) {
-    const departamentos = await this.departamentoRepo.find({
-      where: {
-        idtb_empresas: empresaId,
-        excluido: 'Não',
-      },
-      order: { nome: 'ASC' },
-    })
+    const departamentos = await this.departamentoRepo
+      .createQueryBuilder('d')
+      .where('d.idtb_empresas = :empresaId', { empresaId })
+      .andWhere("d.excluido IS NULL OR d.excluido <> 'Sim'")
+      .orderBy('d.nome', 'ASC')
+      .getMany()
 
-    const funcoes = await this.funcaoRepo.find({
-      where: {
-        idtb_empresas: empresaId,
-        excluido: 'Nao',
-      },
-      order: { nome: 'ASC' },
-    })
+    const funcoes = await this.funcaoRepo
+      .createQueryBuilder('f')
+      .where('f.idtb_empresas = :empresaId', { empresaId })
+      .andWhere("f.excluido IS NULL OR f.excluido <> 'Sim'")
+      .orderBy('f.nome', 'ASC')
+      .getMany()
 
-    const usuarios = await this.usuarioRepo.find({
-      where: {
-        idtb_empresas: empresaId,
-        excluido: 'Não',
-      },
-      order: { nome: 'ASC' },
-      select: ['user_id', 'nome'],
-    })
+    const usuarios = await this.usuarioRepo
+      .createQueryBuilder('u')
+      .where('u.idtb_empresas = :empresaId', { empresaId })
+      .andWhere("u.excluido IS NULL OR u.excluido <> 'Sim'")
+      .orderBy('u.nome', 'ASC')
+      .select(['u.user_id', 'u.nome'])
+      .getMany()
 
     return {
       departamentos,
@@ -125,28 +124,47 @@ export class VinculacaoService {
     }
   }
 
-  async criar(
-    data: {
-      dpto_id: number
-      func_id: number
-      user_id: string
-      percentual_alocacao: number
-      custo_mensal: number
-    },
-    empresaId: number,
-    userLog: string,
-  ) {
+  async criar(data: any, empresaId: number, userLog: string) {
     const vinc = this.vinculacaoRepo.create({
-      dpto_id: data.dpto_id,
-      func_id: data.func_id,
-      user_id: data.user_id,
-      percentual_alocacao: data.percentual_alocacao,
-      custo_mensal: Number(data.custo_mensal),
       empresa_id: empresaId,
+      dpto_id: Number(data.dpto_id),
+      func_id: Number(data.func_id),
+      user_id: String(data.user_id),
+      percentual_alocacao: Number(data.percentual_alocacao),
+      custo_mensal: data.custo_mensal
+        ? Number(data.custo_mensal)
+        : 0,
       user_id_log: userLog,
       excluido: 'Nao',
     })
 
     return this.vinculacaoRepo.save(vinc)
+  }
+
+  async atualizar(id: number, data: any, empresaId: number, userLog: string) {
+    await this.vinculacaoRepo.update(
+      { vinculacao_id: id, empresa_id: empresaId },
+      {
+        percentual_alocacao: Number(data.percentual_alocacao),
+        custo_mensal: data.custo_mensal
+          ? Number(data.custo_mensal)
+          : 0,
+        user_id_log: userLog,
+      },
+    )
+
+    return { ok: true }
+  }
+
+  async excluir(id: number, empresaId: number, userLog: string) {
+    await this.vinculacaoRepo.update(
+      { vinculacao_id: id, empresa_id: empresaId },
+      {
+        excluido: 'Sim',
+        user_id_log: userLog,
+      },
+    )
+
+    return { ok: true }
   }
 }

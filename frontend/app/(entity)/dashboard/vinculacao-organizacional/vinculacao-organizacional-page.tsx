@@ -8,6 +8,7 @@ import {
   Users,
   Briefcase,
   Pencil,
+  Trash2,
   X,
 } from 'lucide-react'
 
@@ -19,19 +20,12 @@ function moeda(valor: number) {
 }
 
 export default function VinculacaoOrganizacionalPage() {
-  /* ========================
-     ESTADOS
-  ======================== */
   const [hierarquia, setHierarquia] = useState<any[]>([])
-
-  // combos da modal
   const [departamentos, setDepartamentos] = useState<any[]>([])
   const [funcoes, setFuncoes] = useState<any[]>([])
   const [usuarios, setUsuarios] = useState<any[]>([])
-
   const [openDptos, setOpenDptos] = useState<number[]>([])
   const [openFuncoes, setOpenFuncoes] = useState<number[]>([])
-
   const [showModal, setShowModal] = useState(false)
   const [editando, setEditando] = useState<any | null>(null)
 
@@ -44,9 +38,6 @@ export default function VinculacaoOrganizacionalPage() {
     custo_mensal: '',
   })
 
-  /* ========================
-     LOAD INICIAL
-  ======================== */
   useEffect(() => {
     carregarHierarquia()
     carregarCombos()
@@ -68,15 +59,11 @@ export default function VinculacaoOrganizacionalPage() {
       { headers: { Authorization: `Bearer ${token}` } },
     )
     const json = await res.json()
-
     setDepartamentos(json.departamentos || [])
     setFuncoes(json.funcoes || [])
     setUsuarios(json.usuarios || [])
   }
 
-  /* ========================
-     HELPERS
-  ======================== */
   function toggle(list: number[], id: number, setter: any) {
     setter(list.includes(id) ? list.filter(i => i !== id) : [...list, id])
   }
@@ -127,12 +114,24 @@ export default function VinculacaoOrganizacionalPage() {
     carregarHierarquia()
   }
 
-  /* ========================
-     RENDER
-  ======================== */
+  async function excluir(id: number) {
+    if (!confirm('Deseja realmente excluir este vínculo?')) return
+
+    const token = localStorage.getItem('entity_token')
+
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/entity/vinculacao/${id}`,
+      {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    )
+
+    carregarHierarquia()
+  }
+
   return (
     <div>
-      {/* HEADER */}
       <div style={header}>
         <h1 style={title}>Vinculação Organizacional</h1>
         <button style={btnNovo} onClick={abrirNovo}>
@@ -140,7 +139,6 @@ export default function VinculacaoOrganizacionalPage() {
         </button>
       </div>
 
-      {/* LISTA */}
       {hierarquia.map(d => {
         const totalDepto = d.funcoes.reduce(
           (acc: number, f: any) =>
@@ -190,7 +188,7 @@ export default function VinculacaoOrganizacionalPage() {
 
                     {openFuncoes.includes(f.func_id) &&
                       f.usuarios.map((u: any) => (
-                        <div key={u.user_id} style={usuarioRow}>
+                        <div key={u.vinculacao_id} style={usuarioRow}>
                           <Users size={14} />
                           <span style={nome}>{u.nome}</span>
                           <span style={percentual}>
@@ -199,11 +197,19 @@ export default function VinculacaoOrganizacionalPage() {
                           <span style={valor}>
                             {moeda(u.custo_mensal)}
                           </span>
+
                           <button
                             style={btnEditar}
                             onClick={() => abrirEdicao(d, f, u)}
                           >
                             <Pencil size={14} />
+                          </button>
+
+                          <button
+                            style={btnExcluir}
+                            onClick={() => excluir(u.vinculacao_id)}
+                          >
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       ))}
@@ -214,7 +220,6 @@ export default function VinculacaoOrganizacionalPage() {
         )
       })}
 
-      {/* MODAL */}
       {showModal && (
         <div style={overlay}>
           <div style={modal}>
@@ -321,9 +326,7 @@ export default function VinculacaoOrganizacionalPage() {
   )
 }
 
-/* ========================
-   STYLES (inalterados)
-======================== */
+/* ---------- STYLES ORIGINAIS ---------- */
 
 const header = {
   display: 'flex',
@@ -385,7 +388,7 @@ const funcaoHeader = {
 
 const usuarioRow = {
   display: 'grid',
-  gridTemplateColumns: 'auto 1fr 80px 120px 36px',
+  gridTemplateColumns: 'auto 1fr 80px 120px 36px 36px',
   alignItems: 'center',
   gap: 8,
   marginLeft: 34,
@@ -420,6 +423,13 @@ const btnEditar = {
   border: 'none',
   cursor: 'pointer',
   color: '#2563eb',
+}
+
+const btnExcluir = {
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  color: '#dc2626',
 }
 
 const totalBadge = {
