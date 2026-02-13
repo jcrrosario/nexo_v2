@@ -58,8 +58,9 @@ export default function EntityLayout({
             src="/logo-nexo.png"
             alt="NEXO"
             style={{
-              height: collapsed ? 36 : 60,
-              transition: 'all 150ms ease',
+              height: collapsed ? 45 : 100,
+              transition: 'all 200ms ease',
+              filter: 'drop-shadow(0 0 10px rgba(120,160,255,0.35))',
             }}
           />
         </div>
@@ -69,6 +70,7 @@ export default function EntityLayout({
         </div>
 
         <nav style={menu}>
+          {/* DASHBOARD */}
           <div
             style={{
               ...menuItem,
@@ -81,6 +83,7 @@ export default function EntityLayout({
             {!collapsed && <span>Dashboard</span>}
           </div>
 
+          {/* CADASTROS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('cadastros')}>
               <div style={menuLabel}>
@@ -145,7 +148,6 @@ export default function EntityLayout({
                   <Network size={16} /> Vinculação Organizacional
                 </div>
 
-                {/* AJUSTE AQUI */}
                 <div
                   style={{
                     ...submenuItem,
@@ -183,6 +185,57 @@ export default function EntityLayout({
             )}
           </div>
 
+          {/* INVENTÁRIO */}
+          <div>
+            <div style={menuGroupHeader} onClick={() => toggle('inventario')}>
+              <div style={menuLabel}>
+                <ClipboardList size={18} />
+                {!collapsed && <span>Inventário</span>}
+              </div>
+              {!collapsed &&
+                (openMenu === 'inventario'
+                  ? <ChevronDown size={16} />
+                  : <ChevronRight size={16} />)}
+            </div>
+
+            {!collapsed && openMenu === 'inventario' && (
+              <div style={submenu}>
+                <div style={submenuItem}>
+                  <FileText size={16} /> Inventário de Riscos Ocupacionais (NR-1)
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* PLANO DE AÇÃO */}
+          <div>
+            <div style={menuGroupHeader} onClick={() => toggle('plano')}>
+              <div style={menuLabel}>
+                <ShieldAlert size={18} />
+                {!collapsed && <span>Plano de ação</span>}
+              </div>
+              {!collapsed &&
+                (openMenu === 'plano'
+                  ? <ChevronDown size={16} />
+                  : <ChevronRight size={16} />)}
+            </div>
+
+            {!collapsed && openMenu === 'plano' && (
+              <div style={submenu}>
+                <div style={submenuItem}>
+                  <FileText size={16} /> Programa de Gerenciamento de Riscos
+                </div>
+                <div style={submenuItem}>
+                  <Users size={16} /> Painel do líder
+                </div>
+                <div style={submenuItem}>
+                  <ShieldAlert size={16} /> Painel de Compliance NR-1
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* COLETA */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('coleta')}>
               <div style={menuLabel}>
@@ -204,6 +257,7 @@ export default function EntityLayout({
             )}
           </div>
 
+          {/* RELATÓRIOS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('relatorios')}>
               <div style={menuLabel}>
@@ -215,6 +269,14 @@ export default function EntityLayout({
                   ? <ChevronDown size={16} />
                   : <ChevronRight size={16} />)}
             </div>
+
+            {!collapsed && openMenu === 'relatorios' && (
+              <div style={submenu}>
+                <div style={submenuItem}>
+                  <BarChart3 size={16} /> Relatório de compliance NR-1
+                </div>
+              </div>
+            )}
           </div>
         </nav>
       </aside>
@@ -226,6 +288,8 @@ export default function EntityLayout({
     </div>
   )
 }
+
+/* ===== STYLES ===== */
 
 const layout = {
   minHeight: '100vh',

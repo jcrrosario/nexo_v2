@@ -61,7 +61,7 @@ export default function EntityLoginPage() {
     <div style={page}>
       <div style={card}>
         <div style={logoArea}>
-          <div style={logo}>NEXO</div>
+          <div style={logo}>Vexor</div>
           <span style={subtitle}>Acesse sua conta</span>
         </div>
 
