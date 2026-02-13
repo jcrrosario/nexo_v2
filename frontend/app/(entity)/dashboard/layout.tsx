@@ -52,7 +52,6 @@ export default function EntityLayout({
 
   return (
     <div style={layout}>
-      {/* SIDEBAR */}
       <aside style={{ ...sidebar, width: collapsed ? 90 : 300 }}>
         <div style={brand}>
           <img
@@ -70,7 +69,6 @@ export default function EntityLayout({
         </div>
 
         <nav style={menu}>
-          {/* DASHBOARD */}
           <div
             style={{
               ...menuItem,
@@ -83,7 +81,6 @@ export default function EntityLayout({
             {!collapsed && <span>Dashboard</span>}
           </div>
 
-          {/* CADASTROS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('cadastros')}>
               <div style={menuLabel}>
@@ -98,7 +95,6 @@ export default function EntityLayout({
 
             {!collapsed && openMenu === 'cadastros' && (
               <div style={submenu}>
-                {/* FUNCIONÁRIOS / USUÁRIOS */}
                 <div
                   style={{
                     ...submenuItem,
@@ -111,7 +107,6 @@ export default function EntityLayout({
                   <Users size={16} /> Funcionários/Usuários
                 </div>
 
-                {/* DEPARTAMENTOS */}
                 <div
                   style={{
                     ...submenuItem,
@@ -124,7 +119,6 @@ export default function EntityLayout({
                   <Building2 size={16} /> Departamentos
                 </div>
 
-                {/* FUNÇÕES */}
                 <div
                   style={{
                     ...submenuItem,
@@ -137,7 +131,6 @@ export default function EntityLayout({
                   <Briefcase size={16} /> Funções
                 </div>
 
-                {/* VINCULAÇÃO ORGANIZACIONAL */}
                 <div
                   style={{
                     ...submenuItem,
@@ -152,9 +145,19 @@ export default function EntityLayout({
                   <Network size={16} /> Vinculação Organizacional
                 </div>
 
-                <div style={submenuItem}>
-                  <AlertTriangle size={16} /> Categoria de risco
+                {/* AJUSTE AQUI */}
+                <div
+                  style={{
+                    ...submenuItem,
+                    ...(isActive('/dashboard/categorias')
+                      ? submenuActive
+                      : {}),
+                  }}
+                  onClick={() => router.push('/dashboard/categorias')}
+                >
+                  <AlertTriangle size={16} /> Categoria do Risco
                 </div>
+
                 <div style={submenuItem}>
                   <Flame size={16} /> Fator de risco
                 </div>
@@ -180,7 +183,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* COLETA */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('coleta')}>
               <div style={menuLabel}>
@@ -202,7 +204,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* RELATÓRIOS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('relatorios')}>
               <div style={menuLabel}>
@@ -218,7 +219,6 @@ export default function EntityLayout({
         </nav>
       </aside>
 
-      {/* CONTEÚDO */}
       <div style={content}>
         <EntityHeader />
         <main style={main}>{children}</main>
@@ -226,8 +226,6 @@ export default function EntityLayout({
     </div>
   )
 }
-
-/* ===== STYLES ===== */
 
 const layout = {
   minHeight: '100vh',

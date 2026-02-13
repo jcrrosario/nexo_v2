@@ -8,9 +8,9 @@ import { AdminAuthModule } from './auth/admin-auth/admin-auth.module'
 import { EntityAuthModule } from './entity/auth/entity-auth.module'
 import { EmpresaModule } from './entity/empresa/empresa.module'
 import { DepartamentoModule } from './entity/departamento/departamento.module'
-import { FuncaoModule } from './entity/funcao/funcao.module' // 👈 INCLUSÃO
+import { FuncaoModule } from './entity/funcao/funcao.module'
 import { VinculacaoModule } from './entity/vinculacao/vinculacao.module'
-
+import { CategoriaModule } from './entity/categoria/categoria.module' // 👈 NOVO
 
 @Module({
   imports: [
@@ -36,7 +36,8 @@ import { VinculacaoModule } from './entity/vinculacao/vinculacao.module'
     EntityAuthModule,
     DepartamentoModule,
     VinculacaoModule,
-    FuncaoModule, // 👈 REGISTRO DO MÓDULO
+    FuncaoModule,
+    CategoriaModule, // 👈 REGISTRO DO MÓDULO
   ],
 })
 export class AppModule {}
