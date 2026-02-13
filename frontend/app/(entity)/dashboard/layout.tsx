@@ -160,9 +160,19 @@ export default function EntityLayout({
                   <AlertTriangle size={16} /> Categoria do Risco
                 </div>
 
-                <div style={submenuItem}>
+                {/* 🔥 AJUSTE AQUI */}
+                <div
+                  style={{
+                    ...submenuItem,
+                    ...(isActive('/dashboard/fatores')
+                      ? submenuActive
+                      : {}),
+                  }}
+                  onClick={() => router.push('/dashboard/fatores')}
+                >
                   <Flame size={16} /> Fator de risco
                 </div>
+
                 <div style={submenuItem}>
                   <Factory size={16} /> Fonte geradora
                 </div>
