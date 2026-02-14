@@ -21,6 +21,7 @@ type Fator = {
   fator_id: number
   nome: string
   severidade: number
+  possiveis_consequencias: string
   created_at: string
   updated_at: string
   user_id_log: string
@@ -48,6 +49,7 @@ export default function FatorPage() {
   const [form, setForm] = useState<any>({
     nome: '',
     severidade: 1,
+    possiveis_consequencias: '',
   })
 
   const pageSize = 5
@@ -72,13 +74,21 @@ export default function FatorPage() {
   }
 
   function novo() {
-    setForm({ nome: '', severidade: 1 })
+    setForm({
+      nome: '',
+      severidade: 1,
+      possiveis_consequencias: '',
+    })
     setEditando(false)
     setOpen(true)
   }
 
   function editar(fator: Fator) {
-    setForm(fator)
+    setForm({
+      ...fator,
+      possiveis_consequencias:
+        fator.possiveis_consequencias || '',
+    })
     setEditando(true)
     setOpen(true)
   }
@@ -115,10 +125,11 @@ export default function FatorPage() {
 
     autoTable(doc, {
       startY: 36,
-      head: [['Fator', 'Severidade']],
+      head: [['Fator', 'Severidade', 'Possíveis consequências']],
       body: dados.map(d => [
         d.nome,
         `${d.severidade} - ${severidadeMap[d.severidade]}`,
+        d.possiveis_consequencias || '',
       ]),
     })
 
@@ -129,6 +140,7 @@ export default function FatorPage() {
     const worksheetData = dados.map(d => ({
       Fator: d.nome,
       Severidade: `${d.severidade} - ${severidadeMap[d.severidade]}`,
+      'Possíveis consequências': d.possiveis_consequencias || '',
       'Criado em': new Date(d.created_at).toLocaleString(),
       'Atualizado em': d.updated_at
         ? new Date(d.updated_at).toLocaleString()
@@ -180,6 +192,10 @@ export default function FatorPage() {
               `${f.severidade} - ${severidadeMap[f.severidade]}`,
           },
           {
+            key: 'possiveis_consequencias',
+            label: 'Possíveis consequências',
+          },
+          {
             key: 'actions',
             label: 'Ações',
             render: f => (
@@ -203,12 +219,14 @@ export default function FatorPage() {
         data={dados}
       />
 
-      <CrudPagination
-        page={page}
-        total={total}
-        pageSize={pageSize}
-        onPageChange={setPage}
-      />
+      <div style={{ marginTop: 20 }}>
+        <CrudPagination
+          page={page}
+          total={total}
+          pageSize={pageSize}
+          onPageChange={setPage}
+        />
+      </div>
 
       {open && (
         <div style={overlay}>
@@ -238,6 +256,23 @@ export default function FatorPage() {
               <option value={4}>4 - Maior</option>
               <option value={5}>5 - Extrema</option>
             </select>
+
+            <textarea
+              placeholder="Possíveis consequências"
+              value={form.possiveis_consequencias || ''}
+              onChange={e =>
+                setForm({
+                  ...form,
+                  possiveis_consequencias: e.target.value,
+                })
+              }
+              style={{
+                ...input,
+                height: 100,
+                resize: 'none',
+              }}
+              maxLength={400}
+            />
 
             <div style={modalFooter}>
               <button
