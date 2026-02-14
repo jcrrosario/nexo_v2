@@ -160,7 +160,6 @@ export default function EntityLayout({
                   <AlertTriangle size={16} /> Categoria do Risco
                 </div>
 
-                {/* 🔥 AJUSTE AQUI */}
                 <div
                   style={{
                     ...submenuItem,
@@ -171,6 +170,32 @@ export default function EntityLayout({
                   onClick={() => router.push('/dashboard/fatores')}
                 >
                   <Flame size={16} /> Fator de risco
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* PESQUISAS */}
+          <div>
+            <div style={menuGroupHeader} onClick={() => toggle('pesquisas')}>
+              <div style={menuLabel}>
+                <Search size={18} />
+                {!collapsed && <span>Pesquisas</span>}
+              </div>
+              {!collapsed &&
+                (openMenu === 'pesquisas'
+                  ? <ChevronDown size={16} />
+                  : <ChevronRight size={16} />)}
+            </div>
+
+            {!collapsed && openMenu === 'pesquisas' && (
+              <div style={submenu}>
+                <div style={submenuItem}>
+                  <Search size={16} /> Configuração
+                </div>
+
+                <div style={submenuItem}>
+                  <FileText size={16} /> Cadastro de pesquisa
                 </div>
               </div>
             )}
