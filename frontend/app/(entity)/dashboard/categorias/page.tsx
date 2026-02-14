@@ -40,7 +40,7 @@ export default function CategoriaPage() {
     nome: '',
   })
 
-  const pageSize = 10
+  const pageSize = 5
 
   async function carregar() {
     const res = await api.get(

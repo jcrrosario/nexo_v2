@@ -20,9 +20,18 @@ import { api } from '@/lib/api'
 type Fator = {
   fator_id: number
   nome: string
+  severidade: number
   created_at: string
   updated_at: string
   user_id_log: string
+}
+
+const severidadeMap: Record<number, string> = {
+  1: 'Leve',
+  2: 'Menor',
+  3: 'Moderada',
+  4: 'Maior',
+  5: 'Extrema',
 }
 
 export default function FatorPage() {
@@ -36,9 +45,12 @@ export default function FatorPage() {
   const [confirmar, setConfirmar] = useState<Fator | null>(null)
   const [log, setLog] = useState<Fator | null>(null)
 
-  const [form, setForm] = useState<any>({ nome: '' })
+  const [form, setForm] = useState<any>({
+    nome: '',
+    severidade: 1,
+  })
 
-  const pageSize = 10
+  const pageSize = 5
 
   async function carregar() {
     const res = await api.get(
@@ -60,7 +72,7 @@ export default function FatorPage() {
   }
 
   function novo() {
-    setForm({ nome: '' })
+    setForm({ nome: '', severidade: 1 })
     setEditando(false)
     setOpen(true)
   }
@@ -72,11 +84,17 @@ export default function FatorPage() {
   }
 
   async function salvar() {
+    if (!form.severidade || form.severidade === 0) {
+      alert('Selecione a severidade')
+      return
+    }
+
     if (editando) {
       await api.put(`/entity/fator/${form.fator_id}`, form)
     } else {
       await api.post('/entity/fator', form)
     }
+
     setOpen(false)
     carregar()
   }
@@ -97,8 +115,11 @@ export default function FatorPage() {
 
     autoTable(doc, {
       startY: 36,
-      head: [['Fator']],
-      body: dados.map(d => [d.nome]),
+      head: [['Fator', 'Severidade']],
+      body: dados.map(d => [
+        d.nome,
+        `${d.severidade} - ${severidadeMap[d.severidade]}`,
+      ]),
     })
 
     doc.save('fatores_risco.pdf')
@@ -107,6 +128,7 @@ export default function FatorPage() {
   function gerarExcel() {
     const worksheetData = dados.map(d => ({
       Fator: d.nome,
+      Severidade: `${d.severidade} - ${severidadeMap[d.severidade]}`,
       'Criado em': new Date(d.created_at).toLocaleString(),
       'Atualizado em': d.updated_at
         ? new Date(d.updated_at).toLocaleString()
@@ -152,6 +174,12 @@ export default function FatorPage() {
         columns={[
           { key: 'nome', label: 'Fator' },
           {
+            key: 'severidade',
+            label: 'Severidade',
+            render: f =>
+              `${f.severidade} - ${severidadeMap[f.severidade]}`,
+          },
+          {
             key: 'actions',
             label: 'Ações',
             render: f => (
@@ -182,60 +210,6 @@ export default function FatorPage() {
         onPageChange={setPage}
       />
 
-      {log && (
-        <div style={overlay}>
-          <div style={modal}>
-            <h3>Log do registro</h3>
-            <p>
-              Criado em:{' '}
-              {new Date(log.created_at).toLocaleString()}
-            </p>
-            <p>
-              Atualizado em:{' '}
-              {log.updated_at
-                ? new Date(log.updated_at).toLocaleString()
-                : '-'}
-            </p>
-            <p>Alterado por: {log.user_id_log || '-'}</p>
-
-            <div style={modalFooter}>
-              <button
-                style={btnPrimary}
-                onClick={() => setLog(null)}
-              >
-                Fechar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {confirmar && (
-        <div style={overlay}>
-          <div style={modal}>
-            <h3>Confirmar exclusão</h3>
-            <p>
-              Deseja excluir o fator{' '}
-              <strong>{confirmar.nome}</strong>?
-            </p>
-            <div style={modalFooter}>
-              <button
-                style={btnCancel}
-                onClick={() => setConfirmar(null)}
-              >
-                Cancelar
-              </button>
-              <button
-                style={btnDelete}
-                onClick={excluir}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {open && (
         <div style={overlay}>
           <div style={modal}>
@@ -247,6 +221,23 @@ export default function FatorPage() {
               onChange={e => setForm({ ...form, nome: e.target.value })}
               style={input}
             />
+
+            <select
+              value={form.severidade}
+              onChange={e =>
+                setForm({
+                  ...form,
+                  severidade: Number(e.target.value),
+                })
+              }
+              style={input}
+            >
+              <option value={1}>1 - Leve</option>
+              <option value={2}>2 - Menor</option>
+              <option value={3}>3 - Moderada</option>
+              <option value={4}>4 - Maior</option>
+              <option value={5}>5 - Extrema</option>
+            </select>
 
             <div style={modalFooter}>
               <button
@@ -355,6 +346,8 @@ const input: CSSProperties = {
   padding: '10px 12px',
   borderRadius: 6,
   border: '1px solid #d1d5db',
+  width: '100%',
+  marginBottom: 12,
 }
 
 const modalFooter: CSSProperties = {

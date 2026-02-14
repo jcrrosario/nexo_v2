@@ -17,6 +17,10 @@ export class FatorEntity {
   @Column({ length: 150 })
   nome: string
 
+  // 🔥 NOVO CAMPO
+  @Column()
+  severidade: number
+
   @CreateDateColumn({ type: 'timestamp without time zone' })
   created_at: Date
 
