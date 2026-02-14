@@ -172,25 +172,6 @@ export default function EntityLayout({
                 >
                   <Flame size={16} /> Fator de risco
                 </div>
-
-                <div style={submenuItem}>
-                  <Factory size={16} /> Fonte geradora
-                </div>
-                <div style={submenuItem}>
-                  <ShieldAlert size={16} /> Danos
-                </div>
-                <div style={submenuItem}>
-                  <Wrench size={16} /> Medidas adm / técnicas
-                </div>
-                <div style={submenuItem}>
-                  <HardHat size={16} /> EPC
-                </div>
-                <div style={submenuItem}>
-                  <HardHat size={16} /> EPI
-                </div>
-                <div style={submenuItem}>
-                  <Search size={16} /> Layout de pesquisa
-                </div>
               </div>
             )}
           </div>
@@ -211,7 +192,7 @@ export default function EntityLayout({
             {!collapsed && openMenu === 'inventario' && (
               <div style={submenu}>
                 <div style={submenuItem}>
-                  <FileText size={16} /> Inventário de Riscos Ocupacionais (NR-1)
+                  <FileText size={16} /> Inventário de Riscos Ocupacionais
                 </div>
               </div>
             )}
