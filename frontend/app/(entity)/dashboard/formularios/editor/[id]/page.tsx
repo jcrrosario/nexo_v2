@@ -68,9 +68,23 @@ export default function EditorFormularioPage() {
     <div style={container}>
       <div style={header}>
         <h2 style={title}>Editor de Perguntas</h2>
-        <button style={btnDark} onClick={() => router.back()}>
-          Voltar
-        </button>
+
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button
+            style={btnSecondary}
+            onClick={() =>
+              router.push(
+                `/dashboard/formularios/imprimir/${formId}`,
+              )
+            }
+          >
+            Relatório
+          </button>
+
+          <button style={btnDark} onClick={() => router.back()}>
+            Voltar
+          </button>
+        </div>
       </div>
 
       {/* CARD 1 - ADICIONAR PERGUNTA */}
@@ -238,6 +252,16 @@ const btnDark: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   gap: 6,
+  minWidth: 120,
+  cursor: 'pointer',
+}
+
+const btnSecondary: CSSProperties = {
+  background: '#475569',
+  color: '#fff',
+  border: 'none',
+  padding: '10px 20px',
+  borderRadius: 8,
   minWidth: 120,
   cursor: 'pointer',
 }
