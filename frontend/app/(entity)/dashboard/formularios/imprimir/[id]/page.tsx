@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 
 type Categoria = {
   categ_id: number
@@ -65,54 +64,94 @@ export default function Page() {
     const doc = new jsPDF()
     let y = 20
     const pageWidth = doc.internal.pageSize.getWidth()
+    const marginLeft = 14
+    const marginRight = 14
+    const usableWidth = pageWidth - marginLeft - marginRight
 
     doc.setFontSize(18)
     doc.text(nomeFormulario, pageWidth / 2, y, { align: 'center' })
     y += 8
 
     doc.setFontSize(12)
-    doc.text('Pesquisa de Percepção de Riscos', pageWidth / 2, y, { align: 'center' })
+    doc.text(
+      'Pesquisa de Percepção de Riscos',
+      pageWidth / 2,
+      y,
+      { align: 'center' },
+    )
     y += 12
 
     doc.setFontSize(11)
-    doc.text(`Empresa: ${empresa}`, 14, y)
+    doc.text(`Empresa: ${empresa}`, marginLeft, y)
     y += 6
-    doc.text('Data de preenchimento: ____ / ____ / ______', 14, y)
+    doc.text(
+      'Data de preenchimento: ____ / ____ / ______',
+      marginLeft,
+      y,
+    )
     y += 6
-    doc.text('Departamento: ____________________________', 14, y)
+    doc.text(
+      'Departamento: ____________________________',
+      marginLeft,
+      y,
+    )
     y += 6
-    doc.text('Função: _________________________________', 14, y)
+    doc.text(
+      'Função: _________________________________',
+      marginLeft,
+      y,
+    )
     y += 12
 
     categorias.forEach(categoria => {
+      if (y > 260) {
+        doc.addPage()
+        y = 20
+      }
+
       doc.setFontSize(13)
-      doc.text(categoria.nome, 14, y)
+      doc.text(categoria.nome, marginLeft, y)
       y += 8
 
       categoria.perguntas.forEach((p, index) => {
-        doc.setFontSize(11)
-        doc.text(`${index + 1}. ${p.texto}`, 14, y)
-        y += 6
-
-        autoTable(doc, {
-          startY: y,
-          head: [opcoes],
-          body: [['', '', '', '', '']],
-          styles: {
-            halign: 'center',
-            fontSize: 10,
-            cellPadding: 6,
-          },
-          theme: 'grid',
-          margin: { left: 14, right: 14 },
-        })
-
-        y = (doc as any).lastAutoTable.finalY + 10
-
         if (y > 260) {
           doc.addPage()
           y = 20
         }
+
+        const blocoAlturaBase = 22
+
+        if (index % 2 === 0) {
+          doc.setFillColor(226, 232, 240)
+          doc.rect(
+            marginLeft - 4,
+            y - 6,
+            usableWidth + 8,
+            blocoAlturaBase,
+            'F',
+          )
+        }
+
+        doc.setFontSize(11)
+
+        const linhasPergunta = doc.splitTextToSize(
+          `${index + 1}. ${p.texto}`,
+          usableWidth,
+        )
+
+        doc.text(linhasPergunta, marginLeft, y)
+        y += linhasPergunta.length * 5 + 4
+
+        const spacing = usableWidth / opcoes.length
+
+        opcoes.forEach((opcao, i) => {
+          const x = marginLeft + i * spacing
+
+          doc.circle(x, y, 2)
+          doc.text(opcao, x + 5, y + 1)
+        })
+
+        y += 12
       })
     })
 
@@ -122,10 +161,7 @@ export default function Page() {
   return (
     <div style={page}>
       <div style={topBar}>
-        <button
-          style={btnPrint}
-          onClick={gerarPDF}
-        >
+        <button style={btnPrint} onClick={gerarPDF}>
           Gerar PDF
         </button>
       </div>
@@ -144,13 +180,16 @@ export default function Page() {
             {empresa || '________________________________'}
           </div>
           <div style={infoRow}>
-            <strong>Data de preenchimento:</strong> ____ / ____ / ______
+            <strong>Data de preenchimento:</strong> ____ /
+            ____ / ______
           </div>
           <div style={infoRow}>
-            <strong>Departamento:</strong> ____________________________
+            <strong>Departamento:</strong>{' '}
+            ____________________________
           </div>
           <div style={infoRow}>
-            <strong>Função:</strong> _________________________________
+            <strong>Função:</strong>{' '}
+            _________________________________
           </div>
         </div>
 
@@ -254,7 +293,6 @@ const perguntaCard: React.CSSProperties = {
   borderRadius: 6,
   border: '1px solid #e5e7eb',
   marginBottom: 14,
-  pageBreakInside: 'avoid',
 }
 
 const perguntaTexto: React.CSSProperties = {
