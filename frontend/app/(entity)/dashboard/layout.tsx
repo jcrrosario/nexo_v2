@@ -190,7 +190,15 @@ export default function EntityLayout({
 
             {!collapsed && openMenu === 'pesquisas' && (
               <div style={submenu}>
-                <div style={submenuItem}>
+                <div
+                  style={{
+                    ...submenuItem,
+                    ...(isActive('/dashboard/formularios')
+                      ? submenuActive
+                      : {}),
+                  }}
+                  onClick={() => router.push('/dashboard/formularios')}
+                >
                   <Search size={16} /> Configuração
                 </div>
 

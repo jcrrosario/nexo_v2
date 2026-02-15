@@ -10,9 +10,9 @@ import { EmpresaModule } from './entity/empresa/empresa.module'
 import { DepartamentoModule } from './entity/departamento/departamento.module'
 import { FuncaoModule } from './entity/funcao/funcao.module'
 import { VinculacaoModule } from './entity/vinculacao/vinculacao.module'
-import { CategoriaModule } from './entity/categoria/categoria.module' 
+import { CategoriaModule } from './entity/categoria/categoria.module'
 import { FatorModule } from './entity/fator/fator.module'
-
+import { FormularioModule } from './entity/formulario/formulario.module' // 👈 NOVO
 
 @Module({
   imports: [
@@ -40,7 +40,8 @@ import { FatorModule } from './entity/fator/fator.module'
     VinculacaoModule,
     FuncaoModule,
     CategoriaModule,
-    FatorModule,    // 👈 REGISTRO DO MÓDULO
+    FatorModule,
+    FormularioModule, // 👈 REGISTRO DO MÓDULO
   ],
 })
 export class AppModule {}
