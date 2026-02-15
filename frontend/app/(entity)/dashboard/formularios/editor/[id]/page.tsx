@@ -73,8 +73,9 @@ export default function EditorFormularioPage() {
         </button>
       </div>
 
+      {/* CARD 1 - ADICIONAR PERGUNTA */}
       <div style={card}>
-        <h3>Nova Pergunta</h3>
+        <h3 style={cardTitle}>Adicionar Pergunta</h3>
 
         <textarea
           placeholder="Digite a pergunta..."
@@ -107,27 +108,32 @@ export default function EditorFormularioPage() {
         </div>
       </div>
 
-      {categorias.map(categoria => (
-        <div key={categoria.categ_id} style={grupo}>
-          <h3 style={grupoTitulo}>{categoria.nome}</h3>
+      {/* CARD 2 - FORMULÁRIO MONTADO */}
+      <div style={card}>
+        <h3 style={cardTitle}>Formulário Montado</h3>
 
-          {categoria.perguntas.length === 0 && (
-            <p style={vazio}>Nenhuma pergunta cadastrada</p>
-          )}
+        {categorias.map(categoria => (
+          <div key={categoria.categ_id} style={grupo}>
+            <h4 style={grupoTitulo}>{categoria.nome}</h4>
 
-          {categoria.perguntas.map(p => (
-            <div key={p.pergunta_id} style={pergunta}>
-              <span>{p.texto}</span>
-              <button
-                style={btnDelete}
-                onClick={() => excluir(p.pergunta_id)}
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-      ))}
+            {categoria.perguntas.length === 0 && (
+              <p style={vazio}>Nenhuma pergunta cadastrada</p>
+            )}
+
+            {categoria.perguntas.map(p => (
+              <div key={p.pergunta_id} style={pergunta}>
+                <span>{p.texto}</span>
+                <button
+                  style={btnDelete}
+                  onClick={() => excluir(p.pergunta_id)}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -136,6 +142,8 @@ export default function EditorFormularioPage() {
 
 const container: CSSProperties = {
   padding: 32,
+  maxWidth: 1000,
+  margin: '0 auto',
 }
 
 const header: CSSProperties = {
@@ -150,38 +158,46 @@ const title: CSSProperties = {
 }
 
 const card: CSSProperties = {
-  background: '#f3f4f6',
-  padding: 20,
-  borderRadius: 10,
-  marginBottom: 30,
+  background: '#ffffff',
+  padding: 24,
+  borderRadius: 12,
+  marginBottom: 32,
+  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+}
+
+const cardTitle: CSSProperties = {
+  fontSize: 22,
+  fontWeight: 700,
+  marginBottom: 20,
+  color: '#0f172a',
 }
 
 const textarea: CSSProperties = {
   width: '100%',
-  padding: 10,
-  borderRadius: 6,
-  border: '1px solid #ccc',
-  marginBottom: 12,
+  padding: 12,
+  borderRadius: 8,
+  border: '1px solid #ddd',
+  marginBottom: 14,
 }
 
 const row: CSSProperties = {
   display: 'flex',
-  gap: 10,
+  gap: 12,
 }
 
 const select: CSSProperties = {
   flex: 1,
-  padding: 10,
-  borderRadius: 6,
-  border: '1px solid #ccc',
+  padding: 12,
+  borderRadius: 8,
+  border: '1px solid #ddd',
 }
 
 const grupo: CSSProperties = {
-  marginBottom: 30,
+  marginBottom: 24,
 }
 
 const grupoTitulo: CSSProperties = {
-  fontSize: 18,
+  fontSize: 16,
   fontWeight: 600,
   marginBottom: 10,
 }
@@ -189,10 +205,10 @@ const grupoTitulo: CSSProperties = {
 const pergunta: CSSProperties = {
   display: 'flex',
   justifyContent: 'space-between',
-  background: '#eef2f7',
-  padding: 10,
-  borderRadius: 6,
-  marginBottom: 6,
+  background: '#f3f4f6',
+  padding: 12,
+  borderRadius: 8,
+  marginBottom: 8,
 }
 
 const vazio: CSSProperties = {
@@ -204,19 +220,26 @@ const btnPrimary: CSSProperties = {
   background: '#16a34a',
   color: '#fff',
   border: 'none',
-  padding: '8px 14px',
-  borderRadius: 6,
+  padding: '10px 16px',
+  borderRadius: 8,
   display: 'flex',
   alignItems: 'center',
   gap: 6,
+  cursor: 'pointer',
 }
 
 const btnDark: CSSProperties = {
   background: '#0b1a3a',
   color: '#fff',
   border: 'none',
-  padding: '8px 14px',
-  borderRadius: 6,
+  padding: '10px 20px',
+  borderRadius: 8,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  minWidth: 120,
+  cursor: 'pointer',
 }
 
 const btnDelete: CSSProperties = {
@@ -225,4 +248,5 @@ const btnDelete: CSSProperties = {
   border: 'none',
   borderRadius: 6,
   padding: '4px 8px',
+  cursor: 'pointer',
 }
