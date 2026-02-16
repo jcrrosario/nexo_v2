@@ -80,7 +80,6 @@ export class FormularioService {
 
   async excluir(user: any, id: number) {
     await this.repo.manager.transaction(async manager => {
-      // 1. Marca o formulário como excluído
       await manager.update(
         Formulario,
         { form_id: id, idtb_empresas: user.idtb_empresas },
@@ -91,7 +90,6 @@ export class FormularioService {
         },
       )
 
-      // 2. Marca todas as perguntas vinculadas como excluídas
       await manager.update(
         Pergunta,
         { form_id: id },
@@ -111,27 +109,15 @@ export class FormularioService {
   ==========================*/
 
   async listarPerguntas(empresaId: number, formId: number) {
-    const categorias = await this.categoriaRepo.find({
-      where: { idtb_empresas: empresaId },
-      order: { categ_id: 'ASC' },
-    })
-
     const perguntas = await this.perguntaRepo.find({
       where: {
         form_id: formId,
         excluido: 'NAO',
       },
-      order: { pergunta_id: 'ASC' },
+      order: { ordem: 'ASC' },
     })
 
-    const agrupado = categorias.map(categoria => ({
-      ...categoria,
-      perguntas: perguntas.filter(
-        p => p.categ_id === categoria.categ_id,
-      ),
-    }))
-
-    return agrupado
+    return perguntas
   }
 
   async criarPergunta(user: any, formId: number, body: any) {

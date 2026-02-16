@@ -12,7 +12,8 @@ import { FuncaoModule } from './entity/funcao/funcao.module'
 import { VinculacaoModule } from './entity/vinculacao/vinculacao.module'
 import { CategoriaModule } from './entity/categoria/categoria.module'
 import { FatorModule } from './entity/fator/fator.module'
-import { FormularioModule } from './entity/formulario/formulario.module' // 👈 NOVO
+import { FormularioModule } from './entity/formulario/formulario.module'
+import { PesquisaModule } from './entity/pesquisa/pesquisa.module' // 👈 NOVO
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { FormularioModule } from './entity/formulario/formulario.module' // 👈
     FuncaoModule,
     CategoriaModule,
     FatorModule,
-    FormularioModule, // 👈 REGISTRO DO MÓDULO
+    FormularioModule,
+    PesquisaModule, // 👈 REGISTRO DO MÓDULO
   ],
 })
 export class AppModule {}

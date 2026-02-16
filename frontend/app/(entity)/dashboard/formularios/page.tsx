@@ -128,7 +128,7 @@ export default function FormulariosPage() {
   return (
     <CrudLayout
       title="Formulários"
-      subtitle="Cadastro de formulários da empresa"
+      subtitle="Cadastro de formulários da pesquisas da NR-1"
       actions={
         <div style={actions}>
           <button style={btnDark} onClick={gerarPDF}>

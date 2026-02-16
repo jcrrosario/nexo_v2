@@ -199,10 +199,18 @@ export default function EntityLayout({
                   }}
                   onClick={() => router.push('/dashboard/formularios')}
                 >
-                  <Search size={16} /> Configuração
+                  <Search size={16} /> Config. Form. de Pesquisa
                 </div>
 
-                <div style={submenuItem}>
+                <div
+                  style={{
+                    ...submenuItem,
+                    ...(isActive('/dashboard/pesquisas')
+                      ? submenuActive
+                      : {}),
+                  }}
+                  onClick={() => router.push('/dashboard/pesquisas')}
+                >
                   <FileText size={16} /> Cadastro de pesquisa
                 </div>
               </div>
