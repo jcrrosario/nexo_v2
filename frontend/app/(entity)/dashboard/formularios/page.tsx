@@ -101,7 +101,7 @@ export default function FormulariosPage() {
 
     autoTable(doc, {
       startY: 30,
-      head: [['Nome', 'Descrição']],
+      head: [['Título da pesquisa', 'Descrição']],
       body: dados.map(d => [d.nome, d.descricao]),
       headStyles: {
         fillColor: [11, 26, 58],
@@ -155,7 +155,7 @@ export default function FormulariosPage() {
 
       <CrudTable
         columns={[
-          { key: 'nome', label: 'Nome' },
+          { key: 'nome', label: 'Título da pesquisa' },
           { key: 'descricao', label: 'Descrição' },
           {
             key: 'actions',
@@ -207,7 +207,7 @@ export default function FormulariosPage() {
             <h3>{editando ? 'Editar' : 'Novo'} Formulário</h3>
 
             <input
-              placeholder="Nome"
+              placeholder="Título da pesquisa"
               value={form.nome}
               onChange={e =>
                 setForm({ ...form, nome: e.target.value })
@@ -233,6 +233,60 @@ export default function FormulariosPage() {
               </button>
               <button style={btnPrimary} onClick={salvar}>
                 Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmar && (
+        <div style={overlay}>
+          <div style={modal}>
+            <h3>Confirmar Exclusão</h3>
+
+            <p style={{ marginTop: 10 }}>
+              Deseja realmente excluir o formulário
+              <strong> {confirmar.nome}</strong>?
+            </p>
+
+            <div style={modalFooter}>
+              <button
+                style={btnCancel}
+                onClick={() => setConfirmar(null)}
+              >
+                Cancelar
+              </button>
+
+              <button
+                style={btnDelete}
+                onClick={excluir}
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {log && (
+        <div style={overlay}>
+          <div style={modal}>
+            <h3>Log do Registro</h3>
+
+            <p><strong>Criado em:</strong> {new Date(log.created_at).toLocaleString()}</p>
+
+            {log.updated_at && (
+              <p><strong>Atualizado em:</strong> {new Date(log.updated_at).toLocaleString()}</p>
+            )}
+
+            <p><strong>Último usuário:</strong> {log.user_id_log}</p>
+
+            <div style={modalFooter}>
+              <button
+                style={btnPrimary}
+                onClick={() => setLog(null)}
+              >
+                Fechar
               </button>
             </div>
           </div>

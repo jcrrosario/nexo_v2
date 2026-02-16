@@ -122,7 +122,7 @@ export default function Page() {
         const blocoAlturaBase = 22
 
         if (index % 2 === 0) {
-          doc.setFillColor(226, 232, 240)
+          doc.setFillColor(203, 213, 225)
           doc.rect(
             marginLeft - 4,
             y - 6,

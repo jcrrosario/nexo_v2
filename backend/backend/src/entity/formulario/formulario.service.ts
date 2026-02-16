@@ -79,14 +79,29 @@ export class FormularioService {
   }
 
   async excluir(user: any, id: number) {
-    await this.repo.update(
-      { form_id: id, idtb_empresas: user.idtb_empresas },
-      {
-        excluido: 'SIM',
-        user_id_log: user.user_id,
-        updated_at: new Date(),
-      },
-    )
+    await this.repo.manager.transaction(async manager => {
+      // 1. Marca o formulário como excluído
+      await manager.update(
+        Formulario,
+        { form_id: id, idtb_empresas: user.idtb_empresas },
+        {
+          excluido: 'SIM',
+          user_id_log: user.user_id,
+          updated_at: new Date(),
+        },
+      )
+
+      // 2. Marca todas as perguntas vinculadas como excluídas
+      await manager.update(
+        Pergunta,
+        { form_id: id },
+        {
+          excluido: 'SIM',
+          user_id_log: user.user_id,
+          updated_at: new Date(),
+        },
+      )
+    })
 
     return { message: 'OK' }
   }
@@ -102,7 +117,10 @@ export class FormularioService {
     })
 
     const perguntas = await this.perguntaRepo.find({
-      where: { form_id: formId, excluido: 'NAO' },
+      where: {
+        form_id: formId,
+        excluido: 'NAO',
+      },
       order: { pergunta_id: 'ASC' },
     })
 
