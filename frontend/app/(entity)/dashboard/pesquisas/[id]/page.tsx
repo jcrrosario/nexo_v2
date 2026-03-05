@@ -61,6 +61,16 @@ export default function LancamentoPage() {
         `/entity/formularios/${pesquisaRes.form_id}/perguntas`,
       )
 
+      const listaPerguntas: any[] = []
+
+      ;(perguntasRes ?? []).forEach((c: any) => {
+        if (c.perguntas) {
+          c.perguntas.forEach((p: any) => {
+            listaPerguntas.push(p)
+          })
+        }
+      })
+
       const dptoRes = await api.get(
         '/entity/departamentos?page=1&limit=1000',
       )
@@ -69,7 +79,7 @@ export default function LancamentoPage() {
         '/entity/funcao?page=1&limit=1000',
       )
 
-      setPerguntas(perguntasRes ?? [])
+      setPerguntas(listaPerguntas)
       setDepartamentos(dptoRes?.data ?? [])
       setFuncoes(funcRes?.data ?? [])
 
@@ -292,7 +302,7 @@ export default function LancamentoPage() {
           </div>
 
           <div style={respostasContainer}>
-            {[1, 2, 3, 4, 5].map(numero => (
+            {[1,2,3,4,5].map(numero => (
               <button
                 key={`${p.pergunta_id}-${numero}`}
                 onClick={() =>
@@ -303,8 +313,7 @@ export default function LancamentoPage() {
                 }
                 style={{
                   ...respostaBtn,
-                  ...(respostas[p.pergunta_id] ===
-                  numero
+                  ...(respostas[p.pergunta_id] === numero
                     ? respostaSelecionada
                     : {}),
                 }}
