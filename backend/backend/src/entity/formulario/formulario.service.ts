@@ -109,6 +109,9 @@ export class FormularioService {
   ==========================*/
 
   async listarPerguntas(empresaId: number, formId: number) {
+
+    const categorias = await this.categoriaRepo.find()
+
     const perguntas = await this.perguntaRepo.find({
       where: {
         form_id: formId,
@@ -117,7 +120,26 @@ export class FormularioService {
       order: { ordem: 'ASC' },
     })
 
-    return perguntas
+    const resultado = categorias.map(c => ({
+      categ_id: c.categ_id,
+      nome: c.nome,
+      perguntas: [] as any[],
+    }))
+
+    perguntas.forEach(p => {
+      const categoria = resultado.find(
+        c => c.categ_id === p.categ_id,
+      )
+
+      if (categoria) {
+        categoria.perguntas.push({
+          pergunta_id: p.pergunta_id,
+          texto: p.texto,
+        })
+      }
+    })
+
+    return resultado
   }
 
   async criarPergunta(user: any, formId: number, body: any) {

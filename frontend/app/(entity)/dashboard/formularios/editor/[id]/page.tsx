@@ -130,11 +130,12 @@ export default function EditorFormularioPage() {
           <div key={categoria.categ_id} style={grupo}>
             <h4 style={grupoTitulo}>{categoria.nome}</h4>
 
-            {categoria.perguntas.length === 0 && (
+            {(!categoria.perguntas ||
+              categoria.perguntas.length === 0) && (
               <p style={vazio}>Nenhuma pergunta cadastrada</p>
             )}
 
-            {categoria.perguntas.map(p => (
+            {(categoria.perguntas ?? []).map(p => (
               <div key={p.pergunta_id} style={pergunta}>
                 <span>{p.texto}</span>
                 <button

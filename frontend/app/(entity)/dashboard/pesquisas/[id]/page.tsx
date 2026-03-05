@@ -27,11 +27,33 @@ export default function LancamentoPage() {
   const [respostas, setRespostas] = useState<any>({})
   const [loading, setLoading] = useState(false)
 
+  const [modalAberto, setModalAberto] = useState(false)
+  const [modalMensagem, setModalMensagem] = useState('')
+
+  function abrirModal(msg: string) {
+    setModalMensagem(msg)
+    setModalAberto(true)
+  }
+
+  function fecharModal() {
+    setModalAberto(false)
+  }
+
+  async function carregarLancamentos() {
+    const lancRes = await api.get(
+      `/entity/pesquisas/${id}/lancamentos`,
+    )
+
+    setLancamentos(lancRes ?? [])
+  }
+
   useEffect(() => {
     async function carregar() {
       const pesquisaRes = await api.get(
         `/entity/pesquisas/${id}`,
       )
+
+      if (!pesquisaRes) return
 
       setPesquisa(pesquisaRes)
 
@@ -47,18 +69,23 @@ export default function LancamentoPage() {
         '/entity/funcao?page=1&limit=1000',
       )
 
-      const lancRes = await api.get(
-        `/entity/pesquisas/${id}/lancamentos`,
-      )
-
       setPerguntas(perguntasRes ?? [])
       setDepartamentos(dptoRes?.data ?? [])
       setFuncoes(funcRes?.data ?? [])
-      setLancamentos(lancRes ?? [])
+
+      await carregarLancamentos()
     }
 
     carregar()
   }, [id])
+
+  function novaResposta() {
+    setIndiceAtual(null)
+    setDptoId('')
+    setFuncId('')
+    setRespostas({})
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   function carregarLancamento(index: number) {
     if (index < 0 || index >= lancamentos.length) return
@@ -91,13 +118,20 @@ export default function LancamentoPage() {
 
   async function salvar() {
     if (!dptoId || !funcId) {
-      alert('Selecione departamento e função.')
+      abrirModal('Selecione departamento e função.')
       return
     }
 
-    if (Object.keys(respostas).length !== perguntas.length) {
-      alert('Responda todas as perguntas antes de salvar.')
+    if (perguntas.length === 0) {
+      abrirModal('Não há perguntas carregadas.')
       return
+    }
+
+    for (const pergunta of perguntas) {
+      if (!respostas[pergunta.pergunta_id]) {
+        abrirModal('Responda todas as perguntas antes de salvar.')
+        return
+      }
     }
 
     setLoading(true)
@@ -114,89 +148,111 @@ export default function LancamentoPage() {
       ),
     })
 
+    await carregarLancamentos()
+
     setLoading(false)
 
-    alert('Respostas registradas com sucesso.')
+    abrirModal('Respostas registradas com sucesso.')
 
-    setDptoId('')
-    setFuncId('')
-    setRespostas({})
-    setIndiceAtual(null)
-
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    novaResposta()
   }
 
   return (
     <div>
 
-      {/* Cabeçalho */}
+      {modalAberto && (
+        <div style={overlay}>
+          <div style={modal}>
+            <div style={{ marginBottom: 20 }}>
+              {modalMensagem}
+            </div>
+            <button
+              onClick={fecharModal}
+              style={btnModal}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={headerContainer}>
         <h1>Lançamento da Pesquisa</h1>
 
-        {lancamentos.length > 0 && (
-          <div style={navContainer}>
-            <button
-              onClick={() => carregarLancamento(0)}
-              disabled={indiceAtual === 0}
-              style={navBtn}
-            >
-              Primeiro
-            </button>
+        <div style={navContainer}>
 
-            <button
-              onClick={() =>
-                indiceAtual !== null &&
-                carregarLancamento(indiceAtual - 1)
-              }
-              disabled={
-                indiceAtual === null ||
-                indiceAtual <= 0
-              }
-              style={navBtn}
-            >
-              Anterior
-            </button>
+          {lancamentos.length > 0 && (
+            <>
+              <button
+                onClick={() => carregarLancamento(0)}
+                disabled={indiceAtual === 0}
+                style={navBtn}
+              >
+                Primeiro
+              </button>
 
-            <span style={contador}>
-              {indiceAtual !== null
-                ? `${indiceAtual + 1} de ${lancamentos.length}`
-                : `0 de ${lancamentos.length}`}
-            </span>
+              <button
+                onClick={() =>
+                  indiceAtual !== null &&
+                  carregarLancamento(indiceAtual - 1)
+                }
+                disabled={
+                  indiceAtual === null ||
+                  indiceAtual <= 0
+                }
+                style={navBtn}
+              >
+                Anterior
+              </button>
 
-            <button
-              onClick={() =>
-                indiceAtual !== null &&
-                carregarLancamento(indiceAtual + 1)
-              }
-              disabled={
-                indiceAtual === null ||
-                indiceAtual >=
+              <span style={contador}>
+                {indiceAtual !== null
+                  ? `${indiceAtual + 1} de ${lancamentos.length}`
+                  : `Novo`}
+              </span>
+
+              <button
+                onClick={() =>
+                  indiceAtual !== null &&
+                  carregarLancamento(indiceAtual + 1)
+                }
+                disabled={
+                  indiceAtual === null ||
+                  indiceAtual >=
+                    lancamentos.length - 1
+                }
+                style={navBtn}
+              >
+                Próximo
+              </button>
+
+              <button
+                onClick={() =>
+                  carregarLancamento(
+                    lancamentos.length - 1,
+                  )
+                }
+                disabled={
+                  indiceAtual ===
                   lancamentos.length - 1
-              }
-              style={navBtn}
-            >
-              Próximo
-            </button>
+                }
+                style={navBtn}
+              >
+                Último
+              </button>
+            </>
+          )}
 
-            <button
-              onClick={() =>
-                carregarLancamento(
-                  lancamentos.length - 1,
-                )
-              }
-              disabled={
-                indiceAtual ===
-                lancamentos.length - 1
-              }
-              style={navBtn}
-            >
-              Último
-            </button>
-          </div>
-        )}
+          <button
+            onClick={novaResposta}
+            style={btnNova}
+          >
+            Nova Resposta
+          </button>
+
+        </div>
       </div>
 
-      {/* Seletores */}
       <div style={selectContainer}>
         <select
           value={dptoId}
@@ -229,7 +285,6 @@ export default function LancamentoPage() {
         </select>
       </div>
 
-      {/* Perguntas */}
       {perguntas.map((p: any, index: number) => (
         <div key={p.pergunta_id} style={card}>
           <div style={perguntaHeader}>
@@ -264,7 +319,6 @@ export default function LancamentoPage() {
         </div>
       ))}
 
-      {/* BOTÃO SALVAR */}
       <button
         onClick={salvar}
         disabled={loading}
@@ -276,9 +330,37 @@ export default function LancamentoPage() {
   )
 }
 
-/* =========================
-   ESTILOS
-=========================*/
+/* ESTILOS */
+
+const overlay = {
+  position: 'fixed' as const,
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  background: 'rgba(0,0,0,0.4)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 9999,
+}
+
+const modal = {
+  background: '#fff',
+  padding: 30,
+  borderRadius: 12,
+  minWidth: 300,
+  textAlign: 'center' as const,
+}
+
+const btnModal = {
+  background: '#16a34a',
+  color: '#fff',
+  padding: '8px 16px',
+  borderRadius: 8,
+  border: 'none',
+  cursor: 'pointer',
+}
 
 const headerContainer = {
   display: 'flex',
@@ -303,6 +385,16 @@ const navBtn = {
 const contador = {
   fontWeight: 600,
   margin: '0 10px',
+}
+
+const btnNova = {
+  marginLeft: 15,
+  background: '#16a34a',
+  color: '#fff',
+  padding: '6px 12px',
+  borderRadius: 6,
+  border: 'none',
+  cursor: 'pointer',
 }
 
 const selectContainer = {
