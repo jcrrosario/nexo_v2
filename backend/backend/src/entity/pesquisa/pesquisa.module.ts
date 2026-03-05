@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Pesquisa } from './pesquisa.entity'
 import { PesquisaLancamento } from './pesquisa-lancamento.entity'
 import { PesquisaResposta } from './pesquisa-resposta.entity'
+import { Formulario } from '../formulario/formulario.entity'
 import { PesquisaService } from './pesquisa.service'
 import { PesquisaController } from './pesquisa.controller'
 
@@ -12,6 +13,7 @@ import { PesquisaController } from './pesquisa.controller'
       Pesquisa,
       PesquisaLancamento,
       PesquisaResposta,
+      Formulario,
     ]),
   ],
   controllers: [PesquisaController],

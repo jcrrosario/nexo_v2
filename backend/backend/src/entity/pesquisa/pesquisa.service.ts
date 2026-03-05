@@ -18,10 +18,6 @@ export class PesquisaService {
     private respRepo: Repository<PesquisaResposta>,
   ) {}
 
-  /* =========================
-     LISTAR PESQUISAS
-  ==========================*/
-
   async listar(
     empresaId: number,
     page: number,
@@ -32,6 +28,7 @@ export class PesquisaService {
         idtb_empresas: empresaId,
         excluido: 'NAO',
       },
+      relations: ['formulario'],
       take: limit,
       skip: (page - 1) * limit,
       order: { pesq_id: 'DESC' },
@@ -39,10 +36,6 @@ export class PesquisaService {
 
     return { data, total }
   }
-
-  /* =========================
-     BUSCAR PESQUISA POR ID
-  ==========================*/
 
   async buscarPorId(
     empresaId: number,
@@ -54,12 +47,9 @@ export class PesquisaService {
         idtb_empresas: empresaId,
         excluido: 'NAO',
       },
+      relations: ['formulario'],
     })
   }
-
-  /* =========================
-     CRIAR PESQUISA
-  ==========================*/
 
   async criar(user: any, body: any) {
     const nova = this.pesquisaRepo.create({
@@ -75,10 +65,6 @@ export class PesquisaService {
     return this.pesquisaRepo.save(nova)
   }
 
-  /* =========================
-     EXCLUIR PESQUISA (LÓGICA)
-  ==========================*/
-
   async excluir(user: any, id: number) {
     await this.pesquisaRepo.update(
       { pesq_id: id, idtb_empresas: user.idtb_empresas },
@@ -91,10 +77,6 @@ export class PesquisaService {
 
     return { message: 'OK' }
   }
-
-  /* =========================
-     CRIAR LANÇAMENTO
-  ==========================*/
 
   async criarLancamento(user: any, body: any) {
     const lanc = await this.lancRepo.save({
@@ -115,10 +97,6 @@ export class PesquisaService {
 
     return { message: 'OK' }
   }
-
-  /* =========================
-     LISTAR LANÇAMENTOS DA PESQUISA
-  ==========================*/
 
   async listarLancamentos(pesqId: number) {
     const lancamentos = await this.lancRepo.find({
@@ -141,10 +119,6 @@ export class PesquisaService {
 
     return resultado
   }
-
-  /* =========================
-     EXCLUIR LANÇAMENTO (FÍSICO)
-  ==========================*/
 
   async excluirLancamento(id: number) {
     await this.lancRepo.delete({ lanc_id: id })

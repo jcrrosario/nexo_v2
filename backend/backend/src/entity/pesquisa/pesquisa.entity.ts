@@ -3,8 +3,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm'
 import { PesquisaLancamento } from './pesquisa-lancamento.entity'
+import { Formulario } from '../formulario/formulario.entity'
 
 @Entity('tb_pesquisa')
 export class Pesquisa {
@@ -37,6 +40,10 @@ export class Pesquisa {
 
   @Column({ length: 3, default: 'NAO' })
   excluido: string
+
+  @ManyToOne(() => Formulario)
+  @JoinColumn({ name: 'form_id' })
+  formulario: Formulario
 
   @OneToMany(() => PesquisaLancamento, (l) => l.pesquisa)
   lancamentos: PesquisaLancamento[]
