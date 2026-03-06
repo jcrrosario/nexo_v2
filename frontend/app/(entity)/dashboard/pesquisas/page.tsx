@@ -17,9 +17,6 @@ type Pesquisa = {
   data_inicial: string
   data_final: string
   observacoes: string
-  formulario?: {
-    nome: string
-  }
 }
 
 type Formulario = {
@@ -98,21 +95,13 @@ export default function PesquisasPage() {
       <CrudTable
         columns={[
           { key: 'pesq_id', label: 'ID' },
-
-          {
-            key: 'titulo',
-            label: 'Título da Pesquisa',
-            render: p => p.formulario?.nome || '',
-          },
-
           { key: 'data_inicial', label: 'Início' },
           { key: 'data_final', label: 'Fim' },
-
           {
             key: 'actions',
             label: 'Ações',
             render: p => (
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
                 <button
                   style={btnDark}
                   onClick={() =>
@@ -149,6 +138,7 @@ export default function PesquisasPage() {
           <div style={modal}>
             <h3>Nova Pesquisa</h3>
 
+            {/* SELECT FORMULÁRIO */}
             <select
               value={form.form_id}
               onChange={e =>

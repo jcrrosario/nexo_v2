@@ -161,7 +161,7 @@ export default function FormulariosPage() {
             key: 'actions',
             label: 'Ações',
             render: f => (
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
                 <button
                   style={btnDarkIcon}
                   onClick={() =>

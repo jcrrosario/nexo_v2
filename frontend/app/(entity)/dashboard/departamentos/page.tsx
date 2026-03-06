@@ -197,7 +197,7 @@ export default function DepartamentosPage() {
             key: 'actions',
             label: 'Ações',
             render: d => (
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
                 <button style={btnIcon} onClick={() => editar(d)}>
                   <Pencil size={14} />
                 </button>

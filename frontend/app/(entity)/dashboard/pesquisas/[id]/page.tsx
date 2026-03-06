@@ -267,7 +267,7 @@ export default function LancamentoPage() {
       )}
 
       <h1 style={titulo}>
-        Lançamento da Pesquisa
+        Lançamento de respostas da pesquisa
       </h1>
 
       <div style={panel}>

@@ -213,7 +213,7 @@ export default function UsuariosPage() {
             key: 'actions',
             label: 'Ações',
             render: u => (
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
                 <button style={btnIcon} onClick={() => editarUsuario(u)}>
                   <Pencil size={14} />
                 </button>

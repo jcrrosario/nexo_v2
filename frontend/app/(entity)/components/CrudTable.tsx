@@ -24,7 +24,13 @@ export default function CrudTable<T extends Record<string, any>>({
       <thead>
         <tr>
           {columns.map(col => (
-            <th key={String(col.key)} style={th}>
+            <th
+              key={String(col.key)}
+              style={{
+                ...th,
+                textAlign: col.key === 'actions' ? 'right' : 'left',
+              }}
+            >
               {col.label}
             </th>
           ))}
@@ -53,7 +59,13 @@ export default function CrudTable<T extends Record<string, any>>({
             }}
           >
             {columns.map(col => (
-              <td key={String(col.key)} style={td}>
+              <td
+                key={String(col.key)}
+                style={{
+                  ...td,
+                  textAlign: col.key === 'actions' ? 'right' : 'left',
+                }}
+              >
                 {col.render
                   ? col.render(row)
                   : col.key === 'actions'
@@ -78,7 +90,6 @@ const table = {
 }
 
 const th = {
-  textAlign: 'left' as const,
   padding: '11px 14px',
   background: 'linear-gradient(180deg, #0b1a3a, #0a1630)',
   color: '#fff',

@@ -8,6 +8,7 @@ import {
   Pencil,
   Trash2,
   Clock,
+  ShieldAlert,
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -183,13 +184,24 @@ export default function FuncoesPage() {
             key: 'actions',
             label: 'Ações',
             render: f => (
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
                 <button style={btnIcon} onClick={() => editar(f)}>
                   <Pencil size={14} />
                 </button>
+
+                <button
+                  style={btnDark}
+                  onClick={() =>
+                    (window.location.href = `/dashboard/funcoes/${f.func_id}/riscos`)
+                  }
+                >
+                  <ShieldAlert size={14} />
+                </button>
+
                 <button style={btnInfo} onClick={() => setLog(f)}>
                   <Clock size={14} />
                 </button>
+
                 <button style={btnDelete} onClick={() => setConfirmar(f)}>
                   <Trash2 size={14} />
                 </button>

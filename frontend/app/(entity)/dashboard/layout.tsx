@@ -157,20 +157,9 @@ export default function EntityLayout({
                   }}
                   onClick={() => router.push('/dashboard/categorias')}
                 >
-                  <AlertTriangle size={16} /> Categoria do Risco
+                  <AlertTriangle size={16} /> Categoria de pesquisas
                 </div>
 
-                <div
-                  style={{
-                    ...submenuItem,
-                    ...(isActive('/dashboard/fatores')
-                      ? submenuActive
-                      : {}),
-                  }}
-                  onClick={() => router.push('/dashboard/fatores')}
-                >
-                  <Flame size={16} /> Fator de risco
-                </div>
               </div>
             )}
           </div>

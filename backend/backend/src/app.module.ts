@@ -9,11 +9,12 @@ import { EntityAuthModule } from './entity/auth/entity-auth.module'
 import { EmpresaModule } from './entity/empresa/empresa.module'
 import { DepartamentoModule } from './entity/departamento/departamento.module'
 import { FuncaoModule } from './entity/funcao/funcao.module'
+import { FuncaoFatorRiscoModule } from './entity/funcao-fator-risco/funcao-fator-risco.module'
 import { VinculacaoModule } from './entity/vinculacao/vinculacao.module'
 import { CategoriaModule } from './entity/categoria/categoria.module'
 import { FatorModule } from './entity/fator/fator.module'
 import { FormularioModule } from './entity/formulario/formulario.module'
-import { PesquisaModule } from './entity/pesquisa/pesquisa.module' // 👈 NOVO
+import { PesquisaModule } from './entity/pesquisa/pesquisa.module'
 
 @Module({
   imports: [
@@ -40,10 +41,11 @@ import { PesquisaModule } from './entity/pesquisa/pesquisa.module' // 👈 NOVO
     DepartamentoModule,
     VinculacaoModule,
     FuncaoModule,
+    FuncaoFatorRiscoModule,
     CategoriaModule,
     FatorModule,
     FormularioModule,
-    PesquisaModule, // 👈 REGISTRO DO MÓDULO
+    PesquisaModule,
   ],
 })
 export class AppModule {}

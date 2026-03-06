@@ -94,7 +94,7 @@ export default function CategoriaPage() {
   function gerarPDF() {
     const doc = new jsPDF()
     doc.setFontSize(18)
-    doc.text('Relatório de Categorias de Risco', 14, 20)
+    doc.text('Relatório de Categorias de Pesquisas', 14, 20)
     doc.setFontSize(11)
     doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 28)
 
@@ -125,8 +125,8 @@ export default function CategoriaPage() {
 
   return (
     <CrudLayout
-      title="Categoria do Risco"
-      subtitle="Cadastro de categorias de risco"
+      title="Categoria de pesquisa"
+      subtitle="Cadastro de categorias usado nas pesquisas"
       actions={
         <div style={actions}>
           <button style={btnDark} onClick={gerarPDF}>
@@ -158,7 +158,7 @@ export default function CategoriaPage() {
             key: 'actions',
             label: 'Ações',
             render: c => (
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
                 <button style={btnIcon} onClick={() => editar(c)}>
                   <Pencil size={14} />
                 </button>
