@@ -186,140 +186,154 @@ export default function LancamentoPage() {
         Lançamento da Pesquisa
       </h1>
 
-      <div style={navContainer}>
+      <div style={panel}>
 
-        {lancamentos.length > 0 && (
-          <>
-            <button
-              onClick={() => carregarLancamento(0)}
-              disabled={indiceAtual === 0}
-              style={navBtn}
-            >
-              Primeiro
-            </button>
+        <div style={navContainer}>
 
-            <button
-              onClick={() =>
-                indiceAtual !== null &&
-                carregarLancamento(indiceAtual - 1)
-              }
-              disabled={
-                indiceAtual === null ||
-                indiceAtual <= 0
-              }
-              style={navBtn}
-            >
-              Anterior
-            </button>
+          {lancamentos.length > 0 && (
+            <>
+              <button onClick={() => carregarLancamento(0)} disabled={indiceAtual === 0} style={navBtn}>
+                Primeiro
+              </button>
 
-            <span style={contador}>
-              {indiceAtual !== null
-                ? (indiceAtual + 1) + ' de ' + lancamentos.length
-                : 'Novo'}
-            </span>
+              <button
+                onClick={() =>
+                  indiceAtual !== null &&
+                  carregarLancamento(indiceAtual - 1)
+                }
+                disabled={
+                  indiceAtual === null ||
+                  indiceAtual <= 0
+                }
+                style={navBtn}
+              >
+                Anterior
+              </button>
 
-            <button
-              onClick={() =>
-                indiceAtual !== null &&
-                carregarLancamento(indiceAtual + 1)
-              }
-              disabled={
-                indiceAtual === null ||
-                indiceAtual >= lancamentos.length - 1
-              }
-              style={navBtn}
-            >
-              Próximo
-            </button>
+              <span style={contador}>
+                {indiceAtual !== null
+                  ? (indiceAtual + 1) + ' de ' + lancamentos.length
+                  : 'Novo'}
+              </span>
 
-            <button
-              onClick={() =>
-                carregarLancamento(lancamentos.length - 1)
-              }
-              disabled={
-                indiceAtual === lancamentos.length - 1
-              }
-              style={navBtn}
-            >
-              Último
-            </button>
-          </>
-        )}
+              <button
+                onClick={() =>
+                  indiceAtual !== null &&
+                  carregarLancamento(indiceAtual + 1)
+                }
+                disabled={
+                  indiceAtual === null ||
+                  indiceAtual >= lancamentos.length - 1
+                }
+                style={navBtn}
+              >
+                Próximo
+              </button>
 
-        <button
-          onClick={novaResposta}
-          style={btnNova}
-        >
-          Nova Resposta
-        </button>
+              <button
+                onClick={() =>
+                  carregarLancamento(lancamentos.length - 1)
+                }
+                disabled={
+                  indiceAtual === lancamentos.length - 1
+                }
+                style={navBtn}
+              >
+                Último
+              </button>
+            </>
+          )}
 
-      </div>
+          <button
+            onClick={novaResposta}
+            style={btnNova}
+          >
+            Nova Resposta
+          </button>
 
-      <div style={selectContainer}>
-
-        <select
-          value={dptoId}
-          onChange={e => setDptoId(e.target.value)}
-          style={select}
-        >
-          <option value="">Selecione o Departamento</option>
-          {departamentos.map((d: any) => (
-            <option key={d.dpto_id} value={d.dpto_id}>
-              {d.nome}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={funcId}
-          onChange={e => setFuncId(e.target.value)}
-          style={select}
-        >
-          <option value="">Selecione a Função</option>
-          {funcoes.map((f: any) => (
-            <option key={f.func_id} value={f.func_id}>
-              {f.nome}
-            </option>
-          ))}
-        </select>
+        </div>
 
       </div>
 
-      <table style={tabela}>
+      <div style={panel}>
 
-        <thead>
-          <tr>
-            <th style={thPergunta}>Pergunta</th>
-            {[1,2,3,4,5].map(n => (
-              <th key={n} style={thNota}>
-                {n}
-                <div style={descricao}>{DESCRICOES[n]}</div>
-              </th>
+        <div style={selectContainer}>
+
+          <select
+            value={dptoId}
+            onChange={e => setDptoId(e.target.value)}
+            style={select}
+          >
+            <option value="">Selecione o Departamento</option>
+            {departamentos.map((d: any) => (
+              <option key={d.dpto_id} value={d.dpto_id}>
+                {d.nome}
+              </option>
             ))}
-          </tr>
-        </thead>
+          </select>
 
-        <tbody>
-          {perguntas.map((p: any, index: number) => (
-            <tr key={p.pergunta_id}>
-              <td style={tdPergunta}>
-                {index + 1}. {p.texto}
-              </td>
+          <select
+            value={funcId}
+            onChange={e => setFuncId(e.target.value)}
+            style={select}
+          >
+            <option value="">Selecione a Função</option>
+            {funcoes.map((f: any) => (
+              <option key={f.func_id} value={f.func_id}>
+                {f.nome}
+              </option>
+            ))}
+          </select>
+
+        </div>
+
+      </div>
+
+      <div style={panel}>
+
+        <table style={tabela}>
+
+          <thead style={theadSticky}>
+            <tr>
+              <th style={thPergunta}>Pergunta</th>
               {[1,2,3,4,5].map(n => (
-                <td key={n} style={tdNota}>
-                  <input
-                    type="radio"
-                    name={'p' + p.pergunta_id}
-                    checked={respostas[p.pergunta_id] === n}
-                    onChange={() => selecionarResposta(p.pergunta_id, n)}
-                  />
-                </td>
+                <th key={n} style={thNota}>
+                  {n}
+                  <div style={descricao}>{DESCRICOES[n]}</div>
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
+          </thead>
 
-      </table>
+          <tbody>
+            {perguntas.map((p: any, index: number) => (
+              <tr
+                key={p.pergunta_id}
+                style={{
+                  ...linha,
+                  background: index % 2 === 0 ? '#ffffff' : '#eef2f7'
+                }}
+              >
+                <td style={tdPergunta}>
+                  {index + 1}. {p.texto}
+                </td>
+                {[1,2,3,4,5].map(n => (
+                  <td key={n} style={tdNota}>
+                    <input
+                      type="radio"
+                      name={'p' + p.pergunta_id}
+                      checked={respostas[p.pergunta_id] === n}
+                      onChange={() => selecionarResposta(p.pergunta_id, n)}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
+
+      </div>
 
       <button onClick={salvar} disabled={loading} style={btnSalvar}>
         {loading ? 'Salvando...' : 'Salvar Respostas'}
@@ -336,11 +350,18 @@ const titulo = {
   marginBottom: 20,
 }
 
+const panel = {
+  background: '#fff',
+  border: '1px solid #e5e7eb',
+  borderRadius: 10,
+  padding: 20,
+  marginBottom: 20,
+}
+
 const navContainer = {
   display: 'flex',
   gap: 10,
   alignItems: 'center',
-  marginBottom: 20,
 }
 
 const navBtn = {
@@ -398,7 +419,6 @@ const btnModal = {
 const selectContainer = {
   display: 'flex',
   gap: 20,
-  marginBottom: 25,
 }
 
 const select = {
@@ -411,6 +431,13 @@ const select = {
 const tabela = {
   width: '100%',
   borderCollapse: 'collapse',
+}
+
+const theadSticky = {
+  position: 'sticky',
+  top: 0,
+  background: '#fff',
+  zIndex: 10,
 }
 
 const thPergunta = {
@@ -426,14 +453,18 @@ const thNota = {
 }
 
 const tdPergunta = {
-  padding: 8,
-  borderBottom: '1px solid #eee',
+  padding: 10,
+  borderBottom: '1px solid #e5e7eb',
   fontSize: 14,
 }
 
 const tdNota = {
   textAlign: 'center',
-  borderBottom: '1px solid #eee',
+  borderBottom: '1px solid #e5e7eb',
+}
+
+const linha = {
+  transition: 'background 0.2s',
 }
 
 const descricao = {
