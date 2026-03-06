@@ -32,6 +32,9 @@ export default function LancamentoPage() {
   const [modalAberto, setModalAberto] = useState(false)
   const [modalMensagem, setModalMensagem] = useState('')
 
+  const [perguntaAtualIndex, setPerguntaAtualIndex] = useState(0)
+  const [validacaoAtiva, setValidacaoAtiva] = useState(false)
+
   function abrirModal(msg: string) {
     setModalMensagem(msg)
     setModalAberto(true)
@@ -83,11 +86,26 @@ export default function LancamentoPage() {
 
   }, [id])
 
+  function scrollParaPergunta(index:number){
+
+    const el = document.getElementById('pergunta-'+index)
+
+    if(el){
+      el.scrollIntoView({
+        behavior:'smooth',
+        block:'center'
+      })
+    }
+
+  }
+
   function novaResposta() {
     setIndiceAtual(null)
     setDptoId('')
     setFuncId('')
     setRespostas({})
+    setPerguntaAtualIndex(0)
+    setValidacaoAtiva(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -113,32 +131,92 @@ export default function LancamentoPage() {
 
   }
 
-  function selecionarResposta(perguntaId: number, numero: number) {
+  function selecionarResposta(perguntaId: number, numero: number, index:number) {
 
     setRespostas((prev: any) => ({
       ...prev,
       [perguntaId]: numero,
     }))
 
+    if(index < perguntas.length - 1){
+
+      const prox = index + 1
+
+      setPerguntaAtualIndex(prox)
+
+      setTimeout(()=>{
+        scrollParaPergunta(prox)
+      },120)
+
+    }
+
   }
 
+  useEffect(() => {
+
+  function handleKey(e: KeyboardEvent) {
+
+    if (['1','2','3','4','5'].includes(e.key)) {
+
+      const numero = Number(e.key)
+
+      const pergunta = perguntas[perguntaAtualIndex]
+
+      if (!pergunta) return
+
+      selecionarResposta(pergunta.pergunta_id,numero,perguntaAtualIndex)
+
+      return
+    }
+
+    if (e.key === 'Enter') {
+
+      const totalPerguntas = perguntas.length
+      const respondidas = Object.keys(respostas).length
+
+      if (totalPerguntas > 0 && respondidas === totalPerguntas) {
+
+        salvar()
+
+      }
+
+    }
+
+  }
+
+  window.addEventListener('keydown', handleKey)
+
+  return () => window.removeEventListener('keydown', handleKey)
+
+}, [perguntaAtualIndex, perguntas, respostas])
+
+  
+
   async function salvar() {
+
+    setValidacaoAtiva(true)
 
     if (!dptoId || !funcId) {
       abrirModal('Selecione departamento e função.')
       return
     }
 
-    if (perguntas.length === 0) {
-      abrirModal('Não há perguntas carregadas.')
-      return
-    }
-
     for (const pergunta of perguntas) {
+
       if (!respostas[pergunta.pergunta_id]) {
-        abrirModal('Responda todas as perguntas antes de salvar.')
+
+        const index = perguntas.findIndex(p=>p.pergunta_id === pergunta.pergunta_id)
+
+        setPerguntaAtualIndex(index)
+
+        scrollParaPergunta(index)
+
+        abrirModal('Existem perguntas não respondidas.')
+
         return
+
       }
+
     }
 
     setLoading(true)
@@ -165,6 +243,12 @@ export default function LancamentoPage() {
 
   }
 
+  const respondidas = Object.keys(respostas).length
+
+  const progresso = perguntas.length
+    ? Math.round((respondidas / perguntas.length) * 100)
+    : 0
+
   return (
 
     <div>
@@ -185,6 +269,22 @@ export default function LancamentoPage() {
       <h1 style={titulo}>
         Lançamento da Pesquisa
       </h1>
+
+      <div style={panel}>
+
+        <div style={contadorPergunta}>
+          Pergunta {perguntaAtualIndex + 1} de {perguntas.length}
+        </div>
+
+        <div style={barraContainer}>
+          <div style={{ ...barraProgresso, width: progresso + '%' }} />
+        </div>
+
+        <div style={progressoTexto}>
+          {respondidas} de {perguntas.length} respondidas
+        </div>
+
+      </div>
 
       <div style={panel}>
 
@@ -306,29 +406,46 @@ export default function LancamentoPage() {
           </thead>
 
           <tbody>
-            {perguntas.map((p: any, index: number) => (
-              <tr
-                key={p.pergunta_id}
-                style={{
-                  ...linha,
-                  background: index % 2 === 0 ? '#ffffff' : '#eef2f7'
-                }}
-              >
-                <td style={tdPergunta}>
-                  {index + 1}. {p.texto}
-                </td>
-                {[1,2,3,4,5].map(n => (
-                  <td key={n} style={tdNota}>
-                    <input
-                      type="radio"
-                      name={'p' + p.pergunta_id}
-                      checked={respostas[p.pergunta_id] === n}
-                      onChange={() => selecionarResposta(p.pergunta_id, n)}
-                    />
+            {perguntas.map((p: any, index: number) => {
+
+              const naoRespondida = validacaoAtiva && !respostas[p.pergunta_id]
+
+              return (
+
+                <tr
+                  id={'pergunta-'+index}
+                  key={p.pergunta_id}
+                  style={{
+                    ...linha,
+                    background:
+                      index === perguntaAtualIndex
+                        ? '#dbeafe'
+                        : index % 2 === 0
+                        ? '#ffffff'
+                        : '#eef2f7',
+                    border: naoRespondida ? '2px solid #ef4444' : 'none'
+                  }}
+                >
+                  <td style={tdPergunta}>
+                    {index + 1}. {p.texto}
                   </td>
-                ))}
-              </tr>
-            ))}
+
+                  {[1,2,3,4,5].map(n => (
+                    <td key={n} style={tdNota}>
+                      <input
+                        type="radio"
+                        name={'p' + p.pergunta_id}
+                        checked={respostas[p.pergunta_id] === n}
+                        onChange={() => selecionarResposta(p.pergunta_id, n,index)}
+                      />
+                    </td>
+                  ))}
+
+                </tr>
+
+              )
+
+            })}
           </tbody>
 
         </table>
@@ -350,12 +467,36 @@ const titulo = {
   marginBottom: 20,
 }
 
+const contadorPergunta = {
+  fontWeight:600,
+  marginBottom:10
+}
+
 const panel = {
   background: '#fff',
   border: '1px solid #e5e7eb',
   borderRadius: 10,
   padding: 20,
   marginBottom: 20,
+}
+
+const barraContainer = {
+  width: '100%',
+  height: 10,
+  background: '#e5e7eb',
+  borderRadius: 10,
+  overflow: 'hidden',
+  marginBottom: 8,
+}
+
+const barraProgresso = {
+  height: '100%',
+  background: '#16a34a',
+}
+
+const progressoTexto = {
+  fontSize: 13,
+  color: '#555',
 }
 
 const navContainer = {
