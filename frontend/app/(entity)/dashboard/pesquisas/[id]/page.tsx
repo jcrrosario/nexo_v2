@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { api } from '@/lib/api'
 
 const DESCRICOES: any = {
-  1: 'Nunca / Quase Nunca',
+  1: 'Nunca',
   2: 'Raramente',
   3: 'Às vezes',
   4: 'Frequentemente',
@@ -13,7 +13,9 @@ const DESCRICOES: any = {
 }
 
 export default function LancamentoPage() {
-  const { id } = useParams()
+
+  const params = useParams()
+  const id = params?.id as string
 
   const [pesquisa, setPesquisa] = useState<any>(null)
   const [perguntas, setPerguntas] = useState<any[]>([])
@@ -40,26 +42,21 @@ export default function LancamentoPage() {
   }
 
   async function carregarLancamentos() {
-    const lancRes = await api.get(
-      `/entity/pesquisas/${id}/lancamentos`,
-    )
-
+    const lancRes = await api.get('/entity/pesquisas/' + id + '/lancamentos')
     setLancamentos(lancRes ?? [])
   }
 
   useEffect(() => {
+
     async function carregar() {
-      const pesquisaRes = await api.get(
-        `/entity/pesquisas/${id}`,
-      )
+
+      const pesquisaRes = await api.get('/entity/pesquisas/' + id)
 
       if (!pesquisaRes) return
 
       setPesquisa(pesquisaRes)
 
-      const perguntasRes = await api.get(
-        `/entity/formularios/${pesquisaRes.form_id}/perguntas`,
-      )
+      const perguntasRes = await api.get('/entity/formularios/' + pesquisaRes.form_id + '/perguntas')
 
       const listaPerguntas: any[] = []
 
@@ -71,22 +68,19 @@ export default function LancamentoPage() {
         }
       })
 
-      const dptoRes = await api.get(
-        '/entity/departamentos?page=1&limit=1000',
-      )
-
-      const funcRes = await api.get(
-        '/entity/funcao?page=1&limit=1000',
-      )
+      const dptoRes = await api.get('/entity/departamentos?page=1&limit=1000')
+      const funcRes = await api.get('/entity/funcao?page=1&limit=1000')
 
       setPerguntas(listaPerguntas)
       setDepartamentos(dptoRes?.data ?? [])
       setFuncoes(funcRes?.data ?? [])
 
       await carregarLancamentos()
+
     }
 
     carregar()
+
   }, [id])
 
   function novaResposta() {
@@ -98,6 +92,7 @@ export default function LancamentoPage() {
   }
 
   function carregarLancamento(index: number) {
+
     if (index < 0 || index >= lancamentos.length) return
 
     const lanc = lancamentos[index]
@@ -107,6 +102,7 @@ export default function LancamentoPage() {
     setFuncId(String(lanc.func_id))
 
     const obj: any = {}
+
     lanc.respostas.forEach((r: any) => {
       obj[r.pergunta_id] = r.resposta_numero
     })
@@ -114,19 +110,20 @@ export default function LancamentoPage() {
     setRespostas(obj)
 
     window.scrollTo({ top: 0, behavior: 'smooth' })
+
   }
 
-  function selecionarResposta(
-    perguntaId: number,
-    numero: number,
-  ) {
+  function selecionarResposta(perguntaId: number, numero: number) {
+
     setRespostas((prev: any) => ({
       ...prev,
       [perguntaId]: numero,
     }))
+
   }
 
   async function salvar() {
+
     if (!dptoId || !funcId) {
       abrirModal('Selecione departamento e função.')
       return
@@ -165,9 +162,11 @@ export default function LancamentoPage() {
     abrirModal('Respostas registradas com sucesso.')
 
     novaResposta()
+
   }
 
   return (
+
     <div>
 
       {modalAberto && (
@@ -176,102 +175,94 @@ export default function LancamentoPage() {
             <div style={{ marginBottom: 20 }}>
               {modalMensagem}
             </div>
-            <button
-              onClick={fecharModal}
-              style={btnModal}
-            >
+            <button onClick={fecharModal} style={btnModal}>
               OK
             </button>
           </div>
         </div>
       )}
 
-      <div style={headerContainer}>
-        <h1>Lançamento da Pesquisa</h1>
+      <h1 style={titulo}>
+        Lançamento da Pesquisa
+      </h1>
 
-        <div style={navContainer}>
+      <div style={navContainer}>
 
-          {lancamentos.length > 0 && (
-            <>
-              <button
-                onClick={() => carregarLancamento(0)}
-                disabled={indiceAtual === 0}
-                style={navBtn}
-              >
-                Primeiro
-              </button>
+        {lancamentos.length > 0 && (
+          <>
+            <button
+              onClick={() => carregarLancamento(0)}
+              disabled={indiceAtual === 0}
+              style={navBtn}
+            >
+              Primeiro
+            </button>
 
-              <button
-                onClick={() =>
-                  indiceAtual !== null &&
-                  carregarLancamento(indiceAtual - 1)
-                }
-                disabled={
-                  indiceAtual === null ||
-                  indiceAtual <= 0
-                }
-                style={navBtn}
-              >
-                Anterior
-              </button>
+            <button
+              onClick={() =>
+                indiceAtual !== null &&
+                carregarLancamento(indiceAtual - 1)
+              }
+              disabled={
+                indiceAtual === null ||
+                indiceAtual <= 0
+              }
+              style={navBtn}
+            >
+              Anterior
+            </button>
 
-              <span style={contador}>
-                {indiceAtual !== null
-                  ? `${indiceAtual + 1} de ${lancamentos.length}`
-                  : `Novo`}
-              </span>
+            <span style={contador}>
+              {indiceAtual !== null
+                ? (indiceAtual + 1) + ' de ' + lancamentos.length
+                : 'Novo'}
+            </span>
 
-              <button
-                onClick={() =>
-                  indiceAtual !== null &&
-                  carregarLancamento(indiceAtual + 1)
-                }
-                disabled={
-                  indiceAtual === null ||
-                  indiceAtual >=
-                    lancamentos.length - 1
-                }
-                style={navBtn}
-              >
-                Próximo
-              </button>
+            <button
+              onClick={() =>
+                indiceAtual !== null &&
+                carregarLancamento(indiceAtual + 1)
+              }
+              disabled={
+                indiceAtual === null ||
+                indiceAtual >= lancamentos.length - 1
+              }
+              style={navBtn}
+            >
+              Próximo
+            </button>
 
-              <button
-                onClick={() =>
-                  carregarLancamento(
-                    lancamentos.length - 1,
-                  )
-                }
-                disabled={
-                  indiceAtual ===
-                  lancamentos.length - 1
-                }
-                style={navBtn}
-              >
-                Último
-              </button>
-            </>
-          )}
+            <button
+              onClick={() =>
+                carregarLancamento(lancamentos.length - 1)
+              }
+              disabled={
+                indiceAtual === lancamentos.length - 1
+              }
+              style={navBtn}
+            >
+              Último
+            </button>
+          </>
+        )}
 
-          <button
-            onClick={novaResposta}
-            style={btnNova}
-          >
-            Nova Resposta
-          </button>
+        <button
+          onClick={novaResposta}
+          style={btnNova}
+        >
+          Nova Resposta
+        </button>
 
-        </div>
       </div>
 
       <div style={selectContainer}>
+
         <select
           value={dptoId}
           onChange={e => setDptoId(e.target.value)}
           style={select}
         >
-          <option value="">
-            Selecione o Departamento
-          </option>
+          <option value="">Selecione o Departamento</option>
           {departamentos.map((d: any) => (
             <option key={d.dpto_id} value={d.dpto_id}>
               {d.nome}
@@ -284,65 +275,98 @@ export default function LancamentoPage() {
           onChange={e => setFuncId(e.target.value)}
           style={select}
         >
-          <option value="">
-            Selecione a Função
-          </option>
+          <option value="">Selecione a Função</option>
           {funcoes.map((f: any) => (
             <option key={f.func_id} value={f.func_id}>
               {f.nome}
             </option>
           ))}
         </select>
+
       </div>
 
-      {perguntas.map((p: any, index: number) => (
-        <div key={p.pergunta_id} style={card}>
-          <div style={perguntaHeader}>
-            <strong>{index + 1}.</strong> {p.texto}
-          </div>
+      <table style={tabela}>
 
-          <div style={respostasContainer}>
-            {[1,2,3,4,5].map(numero => (
-              <button
-                key={`${p.pergunta_id}-${numero}`}
-                onClick={() =>
-                  selecionarResposta(
-                    p.pergunta_id,
-                    numero,
-                  )
-                }
-                style={{
-                  ...respostaBtn,
-                  ...(respostas[p.pergunta_id] === numero
-                    ? respostaSelecionada
-                    : {}),
-                }}
-              >
-                <strong>{numero}</strong>
-                <span style={descricaoResposta}>
-                  {DESCRICOES[numero]}
-                </span>
-              </button>
+        <thead>
+          <tr>
+            <th style={thPergunta}>Pergunta</th>
+            {[1,2,3,4,5].map(n => (
+              <th key={n} style={thNota}>
+                {n}
+                <div style={descricao}>{DESCRICOES[n]}</div>
+              </th>
             ))}
-          </div>
-        </div>
-      ))}
+          </tr>
+        </thead>
 
-      <button
-        onClick={salvar}
-        disabled={loading}
-        style={btnSalvar}
-      >
+        <tbody>
+          {perguntas.map((p: any, index: number) => (
+            <tr key={p.pergunta_id}>
+              <td style={tdPergunta}>
+                {index + 1}. {p.texto}
+              </td>
+              {[1,2,3,4,5].map(n => (
+                <td key={n} style={tdNota}>
+                  <input
+                    type="radio"
+                    name={'p' + p.pergunta_id}
+                    checked={respostas[p.pergunta_id] === n}
+                    onChange={() => selecionarResposta(p.pergunta_id, n)}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+
+      </table>
+
+      <button onClick={salvar} disabled={loading} style={btnSalvar}>
         {loading ? 'Salvando...' : 'Salvar Respostas'}
       </button>
+
     </div>
+
   )
+
 }
 
-/* ESTILOS */
+const titulo = {
+  fontSize: 28,
+  marginBottom: 20,
+}
+
+const navContainer = {
+  display: 'flex',
+  gap: 10,
+  alignItems: 'center',
+  marginBottom: 20,
+}
+
+const navBtn = {
+  padding: '6px 12px',
+  borderRadius: 6,
+  border: '1px solid #ccc',
+  cursor: 'pointer',
+}
+
+const contador = {
+  fontWeight: 600,
+  margin: '0 10px',
+}
+
+const btnNova = {
+  marginLeft: 10,
+  background: '#16a34a',
+  color: '#fff',
+  padding: '6px 12px',
+  borderRadius: 6,
+  border: 'none',
+  cursor: 'pointer',
+}
 
 const overlay = {
-  position: 'fixed' as const,
+  position: 'fixed',
   top: 0,
   left: 0,
   width: '100%',
@@ -359,7 +383,7 @@ const modal = {
   padding: 30,
   borderRadius: 12,
   minWidth: 300,
-  textAlign: 'center' as const,
+  textAlign: 'center',
 }
 
 const btnModal = {
@@ -371,45 +395,10 @@ const btnModal = {
   cursor: 'pointer',
 }
 
-const headerContainer = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: 30,
-}
-
-const navContainer = {
-  display: 'flex',
-  gap: 8,
-  alignItems: 'center',
-}
-
-const navBtn = {
-  padding: '6px 12px',
-  borderRadius: 6,
-  border: '1px solid #ccc',
-  cursor: 'pointer',
-}
-
-const contador = {
-  fontWeight: 600,
-  margin: '0 10px',
-}
-
-const btnNova = {
-  marginLeft: 15,
-  background: '#16a34a',
-  color: '#fff',
-  padding: '6px 12px',
-  borderRadius: 6,
-  border: 'none',
-  cursor: 'pointer',
-}
-
 const selectContainer = {
   display: 'flex',
   gap: 20,
-  marginBottom: 30,
+  marginBottom: 25,
 }
 
 const select = {
@@ -419,48 +408,41 @@ const select = {
   minWidth: 250,
 }
 
-const card = {
-  background: '#f8fafc',
-  padding: 20,
-  borderRadius: 12,
-  marginBottom: 20,
-  border: '1px solid #e2e8f0',
+const tabela = {
+  width: '100%',
+  borderCollapse: 'collapse',
 }
 
-const perguntaHeader = {
-  marginBottom: 10,
+const thPergunta = {
+  textAlign: 'left',
+  padding: 10,
+  borderBottom: '2px solid #ddd',
 }
 
-const respostasContainer = {
-  display: 'flex',
-  gap: 10,
-  flexWrap: 'wrap' as const,
+const thNota = {
+  textAlign: 'center',
+  padding: 8,
+  borderBottom: '2px solid #ddd',
 }
 
-const respostaBtn = {
-  padding: 12,
-  borderRadius: 8,
-  border: '1px solid #ccc',
-  cursor: 'pointer',
-  minWidth: 120,
-  display: 'flex',
-  flexDirection: 'column' as const,
-  alignItems: 'center',
+const tdPergunta = {
+  padding: 8,
+  borderBottom: '1px solid #eee',
+  fontSize: 14,
 }
 
-const respostaSelecionada = {
-  background: '#16a34a',
-  color: '#fff',
-  border: '1px solid #16a34a',
+const tdNota = {
+  textAlign: 'center',
+  borderBottom: '1px solid #eee',
 }
 
-const descricaoResposta = {
+const descricao = {
   fontSize: 11,
-  marginTop: 4,
+  color: '#666',
 }
 
 const btnSalvar = {
-  marginTop: 30,
+  marginTop: 25,
   background: '#16a34a',
   color: '#fff',
   padding: '12px 20px',
