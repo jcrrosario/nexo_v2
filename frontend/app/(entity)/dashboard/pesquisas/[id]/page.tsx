@@ -44,6 +44,136 @@ export default function LancamentoPage() {
     setModalAberto(false)
   }
 
+  // ===== relatorio =====
+
+
+async function gerarRelatorio() {
+
+  const response = await fetch(
+    process.env.NEXT_PUBLIC_API_URL + '/entity/pesquisas/' + id + '/relatorio'
+  )
+
+  const dados = await response.json()
+
+  const { jsPDF } = await import('jspdf')
+
+  const doc = new jsPDF()
+
+  const pageWidth = doc.internal.pageSize.getWidth()
+
+  let y = 20
+
+  doc.setFontSize(18)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Relatório Gerencial da Pesquisa', pageWidth / 2, y, { align: 'center' })
+
+  y += 6
+
+  doc.setFontSize(11)
+  doc.setFont('helvetica', 'normal')
+  doc.text('Agrupado por: Dpto + Função', pageWidth / 2, y, { align: 'center' })
+
+  y += 12
+
+  let departamentoAtual = ''
+  let funcaoAtual = ''
+  let numero = 1
+  let zebra = false
+
+  dados.forEach((d:any) => {
+
+    if (d.departamento !== departamentoAtual) {
+
+      if (departamentoAtual !== '') {
+        doc.addPage()
+        y = 20
+      }
+
+      doc.setFontSize(14)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Departamento: ' + d.departamento, 14, y)
+
+      y += 6
+
+      departamentoAtual = d.departamento
+      funcaoAtual = ''
+      numero = 1
+    }
+
+    if (d.funcao !== funcaoAtual) {
+
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'normal')
+      doc.text('Função: ' + d.funcao, 18, y)
+
+      y += 8
+
+      funcaoAtual = d.funcao
+    }
+
+    const media = Number(d.media)
+    const valor = Math.round(media)
+
+    const resultado =
+      valor === 1 ? '1 - Nunca' :
+      valor === 2 ? '2 - Raramente' :
+      valor === 3 ? '3 - Às vezes' :
+      valor === 4 ? '4 - Frequentemente' :
+      '5 - Sempre'
+
+    const pergunta = numero + '. ' + d.pergunta
+
+    doc.setFontSize(9)
+
+    const linhas = doc.splitTextToSize(pergunta, 130)
+    const altura = linhas.length * 4 + 4
+
+    if (zebra) {
+      doc.setFillColor(240,240,240)
+      doc.rect(14, y - 3, 182, altura, 'F')
+    }
+
+    doc.setFont('helvetica', 'normal')
+    doc.text(linhas, 16, y)
+
+    let r = 0
+    let g = 0
+    let b = 0
+
+    if (valor === 1) { r = 220; g = 38; b = 38 }
+    else if (valor === 2) { r = 249; g = 115; b = 22 }
+    else if (valor === 3) { r = 234; g = 179; b = 8 }
+    else if (valor === 4) { r = 37; g = 99; b = 235 }
+    else { r = 22; g = 163; b = 74 }
+
+    doc.setTextColor(r, g, b)
+
+    doc.setFont('helvetica', 'bold')
+    doc.text(resultado, pageWidth - 14, y, { align: 'right' })
+
+    doc.setTextColor(0,0,0)
+
+    y += altura
+
+    numero++
+    zebra = !zebra
+
+    if (y > 270) {
+      doc.addPage()
+      y = 20
+    }
+
+  })
+
+  doc.save('relatorio-pesquisa.pdf')
+
+}
+
+
+
+  
+  // ==================================
+
   async function carregarLancamentos() {
     const lancRes = await api.get('/entity/pesquisas/' + id + '/lancamentos')
     setLancamentos(lancRes ?? [])
@@ -351,6 +481,14 @@ export default function LancamentoPage() {
             Nova Resposta
           </button>
 
+          {/* BOTÃO ADICIONADO */}
+          <button
+            onClick={gerarRelatorio}
+            style={btnRelatorio}
+          >
+            📊 Relatório
+          </button>
+
         </div>
 
       </div>
@@ -520,6 +658,15 @@ const contador = {
 const btnNova = {
   marginLeft: 10,
   background: '#16a34a',
+  color: '#fff',
+  padding: '6px 12px',
+  borderRadius: 6,
+  border: 'none',
+  cursor: 'pointer',
+}
+
+const btnRelatorio = {
+  background: '#1d4ed8',
   color: '#fff',
   padding: '6px 12px',
   borderRadius: 6,
