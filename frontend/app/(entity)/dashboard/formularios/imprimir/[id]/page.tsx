@@ -103,57 +103,63 @@ export default function Page() {
     )
     y += 12
 
-    categorias.forEach(categoria => {
-      if (y > 260) {
-        doc.addPage()
-        y = 20
-      }
-
-      doc.setFontSize(13)
-      doc.text(categoria.nome, marginLeft, y)
-      y += 8
-
-      categoria.perguntas.forEach((p, index) => {
+    categorias
+      .filter(
+        categoria =>
+          categoria.perguntas &&
+          categoria.perguntas.length > 0,
+      )
+      .forEach(categoria => {
         if (y > 260) {
           doc.addPage()
           y = 20
         }
 
-        const blocoAlturaBase = 22
+        doc.setFontSize(13)
+        doc.text(categoria.nome, marginLeft, y)
+        y += 8
 
-        if (index % 2 === 0) {
-          doc.setFillColor(203, 213, 225)
-          doc.rect(
-            marginLeft - 4,
-            y - 6,
-            usableWidth + 8,
-            blocoAlturaBase,
-            'F',
+        categoria.perguntas.forEach((p, index) => {
+          if (y > 260) {
+            doc.addPage()
+            y = 20
+          }
+
+          const blocoAlturaBase = 22
+
+          if (index % 2 === 0) {
+            doc.setFillColor(203, 213, 225)
+            doc.rect(
+              marginLeft - 4,
+              y - 6,
+              usableWidth + 8,
+              blocoAlturaBase,
+              'F',
+            )
+          }
+
+          doc.setFontSize(11)
+
+          const linhasPergunta = doc.splitTextToSize(
+            `${index + 1}. ${p.texto}`,
+            usableWidth,
           )
-        }
 
-        doc.setFontSize(11)
+          doc.text(linhasPergunta, marginLeft, y)
+          y += linhasPergunta.length * 5 + 4
 
-        const linhasPergunta = doc.splitTextToSize(
-          `${index + 1}. ${p.texto}`,
-          usableWidth,
-        )
+          const spacing = usableWidth / opcoes.length
 
-        doc.text(linhasPergunta, marginLeft, y)
-        y += linhasPergunta.length * 5 + 4
+          opcoes.forEach((opcao, i) => {
+            const x = marginLeft + i * spacing
 
-        const spacing = usableWidth / opcoes.length
+            doc.circle(x, y, 2)
+            doc.text(opcao, x + 5, y + 1)
+          })
 
-        opcoes.forEach((opcao, i) => {
-          const x = marginLeft + i * spacing
-
-          doc.circle(x, y, 2)
-          doc.text(opcao, x + 5, y + 1)
+          y += 12
         })
-
-        y += 12
       })
-    })
 
     doc.save('pesquisa.pdf')
   }
@@ -193,30 +199,36 @@ export default function Page() {
           </div>
         </div>
 
-        {categorias.map(categoria => (
-          <div key={categoria.categ_id} style={grupo}>
-            <div style={grupoHeader}>
-              {categoria.nome}
-            </div>
-
-            {categoria.perguntas.map((p, index) => (
-              <div key={p.pergunta_id} style={perguntaCard}>
-                <div style={perguntaTexto}>
-                  {index + 1}. {p.texto}
-                </div>
-
-                <div style={escala}>
-                  {opcoes.map(opcao => (
-                    <div key={opcao} style={opcaoBox}>
-                      <div style={checkbox}></div>
-                      <span>{opcao}</span>
-                    </div>
-                  ))}
-                </div>
+        {categorias
+          .filter(
+            categoria =>
+              categoria.perguntas &&
+              categoria.perguntas.length > 0,
+          )
+          .map(categoria => (
+            <div key={categoria.categ_id} style={grupo}>
+              <div style={grupoHeader}>
+                {categoria.nome}
               </div>
-            ))}
-          </div>
-        ))}
+
+              {categoria.perguntas.map((p, index) => (
+                <div key={p.pergunta_id} style={perguntaCard}>
+                  <div style={perguntaTexto}>
+                    {index + 1}. {p.texto}
+                  </div>
+
+                  <div style={escala}>
+                    {opcoes.map(opcao => (
+                      <div key={opcao} style={opcaoBox}>
+                        <div style={checkbox}></div>
+                        <span>{opcao}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
       </div>
     </div>
   )

@@ -126,28 +126,29 @@ export default function EditorFormularioPage() {
       <div style={card}>
         <h3 style={cardTitle}>Formulário Montado</h3>
 
-        {categorias.map(categoria => (
-          <div key={categoria.categ_id} style={grupo}>
-            <h4 style={grupoTitulo}>{categoria.nome}</h4>
+        {categorias
+          .filter(
+            categoria =>
+              categoria.perguntas &&
+              categoria.perguntas.length > 0,
+          )
+          .map(categoria => (
+            <div key={categoria.categ_id} style={grupo}>
+              <h4 style={grupoTitulo}>{categoria.nome}</h4>
 
-            {(!categoria.perguntas ||
-              categoria.perguntas.length === 0) && (
-              <p style={vazio}>Nenhuma pergunta cadastrada</p>
-            )}
-
-            {(categoria.perguntas ?? []).map(p => (
-              <div key={p.pergunta_id} style={pergunta}>
-                <span>{p.texto}</span>
-                <button
-                  style={btnDelete}
-                  onClick={() => excluir(p.pergunta_id)}
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        ))}
+              {(categoria.perguntas ?? []).map(p => (
+                <div key={p.pergunta_id} style={pergunta}>
+                  <span>{p.texto}</span>
+                  <button
+                    style={btnDelete}
+                    onClick={() => excluir(p.pergunta_id)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ))}
       </div>
     </div>
   )
