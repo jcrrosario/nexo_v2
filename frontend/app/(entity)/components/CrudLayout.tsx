@@ -1,10 +1,12 @@
 'use client'
 
 import React from 'react'
+import { usePermission } from '@/hooks/usePermission'
 
 type CrudLayoutProps = {
   title: string
   subtitle?: string
+  rotina?: string
   actions?: React.ReactNode
   children: React.ReactNode
 }
@@ -12,9 +14,24 @@ type CrudLayoutProps = {
 export default function CrudLayout({
   title,
   subtitle,
+  rotina,
   actions,
   children,
 }: CrudLayoutProps) {
+
+  const { canView } = usePermission()
+
+  if (rotina && !canView(rotina)) {
+    return (
+      <div style={container}>
+        <div style={accessDenied}>
+          <h2>Acesso negado</h2>
+          <p>Você não possui permissão para acessar esta rotina.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={container}>
       <div style={header}>
@@ -60,4 +77,9 @@ const subtitleStyle = {
 
 const content = {
   width: '100%',
+}
+
+const accessDenied = {
+  padding: 40,
+  textAlign: 'center' as const,
 }

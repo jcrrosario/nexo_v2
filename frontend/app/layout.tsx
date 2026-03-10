@@ -1,4 +1,5 @@
 import './globals.css'
+import { PermissionProvider } from '@/providers/PermissionProvider'
 
 export const metadata = {
   title: 'NEXO',
@@ -12,7 +13,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <PermissionProvider>
+          {children}
+        </PermissionProvider>
+      </body>
     </html>
   )
 }

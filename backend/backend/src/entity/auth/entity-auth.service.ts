@@ -17,6 +17,7 @@ export class EntityAuthService {
     idtb_empresas: number,
     senha: string,
   ) {
+
     const empresa = await this.empresaService.findById(idtb_empresas)
 
     if (!empresa || empresa.ativa === 'Não') {
@@ -46,13 +47,17 @@ export class EntityAuthService {
       type: 'entity',
     }
 
+    const access_token = this.jwtService.sign(payload)
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token,
       empresa: {
         nome_fantasia: empresa.nome_fantasia,
       },
       usuario: {
+        user_id: usuario.user_id,
         nome: usuario.nome,
+        perfil: usuario.perfil,
       },
     }
   }

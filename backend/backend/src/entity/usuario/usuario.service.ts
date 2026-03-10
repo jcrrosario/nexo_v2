@@ -151,4 +151,69 @@ export class UsuarioService {
 
     return this.repo.save(usuario)
   }
+
+  /* =====================================================
+   * LISTAR PERMISSÕES
+   * ===================================================== */
+  async listarPermissoes(user_id: string, idtb_empresas: number) {
+
+    const rotinas = await this.repo.manager.query(`
+      SELECT
+        r.rotina_id,
+        r.nome,
+        COALESCE(p.pode_incluir,false)  as pode_incluir,
+        COALESCE(p.pode_alterar,false)  as pode_alterar,
+        COALESCE(p.pode_excluir,false)  as pode_excluir,
+        COALESCE(p.pode_relatorio,false) as pode_relatorio
+      FROM tb_rotina r
+      LEFT JOIN tb_usuario_permissao p
+        ON p.rotina_id = r.rotina_id
+        AND p.user_id = $1
+        AND p.idtb_empresas = $2
+      ORDER BY r.nome
+    `,[user_id,idtb_empresas])
+
+    return rotinas
+
+  }
+
+  /* =====================================================
+   * SALVAR PERMISSÕES
+   * ===================================================== */
+  async salvarPermissoes(
+    user_id: string,
+    idtb_empresas: number,
+    permissoes: any[],
+  ) {
+
+    await this.repo.manager.query(
+      `DELETE FROM tb_usuario_permissao
+       WHERE user_id = $1
+       AND idtb_empresas = $2`,
+      [user_id,idtb_empresas]
+    )
+
+    for (const p of permissoes) {
+
+      await this.repo.manager.query(`
+        INSERT INTO tb_usuario_permissao
+        (permissao_id,user_id,idtb_empresas,rotina_id,pode_incluir,pode_alterar,pode_excluir,pode_relatorio)
+        VALUES
+        (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7)
+      `,[
+        user_id,
+        idtb_empresas,
+        p.rotina_id,
+        p.pode_incluir,
+        p.pode_alterar,
+        p.pode_excluir,
+        p.pode_relatorio
+      ])
+
+    }
+
+    return { message: 'Permissões atualizadas com sucesso.' }
+
+  }
+
 }

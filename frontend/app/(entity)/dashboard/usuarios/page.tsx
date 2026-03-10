@@ -5,7 +5,6 @@ import {
   FileText,
   FileSpreadsheet,
   Plus,
-  X,
   Pencil,
   Trash2,
   Clock,
@@ -17,6 +16,7 @@ import CrudLayout from '../../components/CrudLayout'
 import CrudTable from '../../components/CrudTable'
 import CrudPagination from '../../components/CrudPagination'
 import { api } from '@/lib/api'
+import { usePermission } from '@/hooks/usePermission'
 
 type Usuario = {
   user_id: string
@@ -24,208 +24,246 @@ type Usuario = {
   email: string
   perfil: 'Administrador' | 'Usuario'
   ativo: 'Sim' | 'Não'
-  foto?: string
-  created_at: string
-  updated_at: string
-  user_id_log: string
+  created_at?: string
+  updated_at?: string
+  user_id_log?: string
 }
 
 export default function UsuariosPage() {
-  const [dados, setDados] = useState<Usuario[]>([])
-  const [busca, setBusca] = useState('')
-  const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
 
-  const [open, setOpen] = useState(false)
-  const [editando, setEditando] = useState(false)
-  const [confirmar, setConfirmar] = useState<Usuario | null>(null)
-  const [log, setLog] = useState<Usuario | null>(null)
+  const { canCreate, canEdit, canDelete } = usePermission()
 
-  const [form, setForm] = useState<any>({
-    user_id: '',
-    nome: '',
-    email: '',
-    senha: '',
-    perfil: 'Usuario',
-    ativo: 'Sim',
-    foto: '',
+  const [dados,setDados] = useState<Usuario[]>([])
+  const [page,setPage] = useState(1)
+  const [total,setTotal] = useState(0)
+
+  const [open,setOpen] = useState(false)
+  const [editando,setEditando] = useState(false)
+  const [confirmar,setConfirmar] = useState<Usuario | null>(null)
+  const [log,setLog] = useState<Usuario | null>(null)
+  const [aviso,setAviso] = useState<string | null>(null)
+
+  const [form,setForm] = useState<any>({
+    user_id:'',
+    nome:'',
+    email:'',
+    senha:'',
+    perfil:'Usuario',
+    ativo:'Sim'
   })
 
   const pageSize = 5
 
-  async function carregar() {
-    const res = await api.get(
-      `/entity/usuarios?page=${page}&limit=${pageSize}&search=${busca}`,
-    )
+  function avisar(msg:string){
+    setAviso(msg)
+  }
+
+  async function carregar(){
+    const res = await api.get(`/entity/usuarios?page=${page}&limit=${pageSize}`)
     setDados(res.data)
     setTotal(res.total)
   }
 
-  useEffect(() => {
+  useEffect(()=>{
     carregar()
-  }, [page, busca])
+  },[page])
 
-  function novoUsuario() {
+  function novoUsuario(){
+
+    if(!canCreate('CAD_USUARIO')){
+      avisar('Você não possui permissão para incluir usuários.')
+      return
+    }
+
     setForm({
-      user_id: '',
-      nome: '',
-      email: '',
-      senha: '',
-      perfil: 'Usuario',
-      ativo: 'Sim',
-      foto: '',
+      user_id:'',
+      nome:'',
+      email:'',
+      senha:'',
+      perfil:'Usuario',
+      ativo:'Sim'
     })
+
     setEditando(false)
     setOpen(true)
   }
 
-  function editarUsuario(usuario: Usuario) {
+  function editarUsuario(usuario:Usuario){
     setForm(usuario)
     setEditando(true)
     setOpen(true)
   }
 
-  async function salvar() {
-    if (!form.email || form.email.trim() === '') {
-      alert('O campo E-mail é obrigatório.')
+  async function salvar(){
+
+    if(!form.email){
+      avisar('O campo e-mail é obrigatório.')
       return
     }
 
-    try {
-      if (editando) {
-        await api.put(`/entity/usuarios/${form.user_id}`, form)
-      } else {
-        await api.post('/entity/usuarios', form)
+    try{
+
+      if(editando){
+        await api.put(`/entity/usuarios/${form.user_id}`,form)
+      }else{
+
+        if(!canCreate('CAD_USUARIO')){
+          avisar('Você não possui permissão para incluir usuários.')
+          return
+        }
+
+        await api.post('/entity/usuarios',form)
       }
 
       setOpen(false)
       carregar()
-    } catch (err: any) {
-      const data = err?.response?.data
 
-      const textoErro =
-        typeof data === 'string'
-          ? data
-          : Array.isArray(data?.message)
-          ? data.message.join(' ')
-          : data?.message || ''
-
-      if (textoErro.toLowerCase().includes('email')) {
-        alert(
-          'Não foi possível salvar o registro pois o e-mail informado já está cadastrado no sistema.',
-        )
-        return
-      }
-
-      alert(
-        'Não foi possível salvar o registro. Verifique os dados e tente novamente.',
-      )
+    }catch{
+      avisar('Não foi possível salvar.')
     }
   }
 
-  async function excluir() {
-    if (!confirmar) return
-    await api.put(`/entity/usuarios/${confirmar.user_id}/excluir`, {})
+  async function excluir(){
+
+    if(!confirmar) return
+
+    if(!canDelete('CAD_USUARIO')){
+      avisar('Você não possui permissão para excluir usuários.')
+      return
+    }
+
+    await api.put(`/entity/usuarios/${confirmar.user_id}/excluir`,{})
     setConfirmar(null)
     carregar()
   }
 
-  function gerarPDF() {
-    const doc = new jsPDF()
-    doc.setFontSize(18)
-    doc.text('Relatório de Usuários', 14, 20)
-    doc.setFontSize(11)
-    doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 28)
+  function gerarPDF(){
 
-    autoTable(doc, {
-      startY: 36,
-      head: [['Nome', 'E-mail', 'Perfil', 'Status']],
-      body: dados.map(u => [
+    if(!canEdit('CAD_USUARIO')){
+      avisar('Você não possui permissão para emitir relatório.')
+      return
+    }
+
+    const doc = new jsPDF()
+
+    doc.text('Relatório de Usuários',14,20)
+
+    autoTable(doc,{
+      startY:30,
+      head:[['Nome','Email','Perfil','Status']],
+      body:dados.map(u=>[
         u.nome,
         u.email,
         u.perfil,
-        u.ativo === 'Sim' ? 'Ativo' : 'Inativo',
-      ]),
-      headStyles: { fillColor: [11, 26, 58], textColor: 255 },
-      alternateRowStyles: { fillColor: [245, 247, 250] },
+        u.ativo
+      ])
     })
 
     doc.save('usuarios.pdf')
   }
 
-  function gerarExcel() {
-    const ws = XLSX.utils.json_to_sheet(
-      dados.map(u => ({
-        Nome: u.nome,
-        Email: u.email,
-        Perfil: u.perfil,
-        Status: u.ativo,
-      })),
-    )
+  function gerarExcel(){
+
+    if(!canEdit('CAD_USUARIO')){
+      avisar('Você não possui permissão para emitir relatório.')
+      return
+    }
+
+    const ws = XLSX.utils.json_to_sheet(dados)
+
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Usuários')
-    XLSX.writeFile(wb, 'usuarios.xlsx')
+    XLSX.utils.book_append_sheet(wb,ws,'Usuarios')
+
+    XLSX.writeFile(wb,'usuarios.xlsx')
   }
 
-  return (
+  return(
+
     <CrudLayout
+      rotina="CAD_USUARIO"
       title="Usuários"
       subtitle="Gerencie os funcionários/usuários do sistema"
       actions={
         <div style={actions}>
+
           <button style={btnDark} onClick={gerarPDF}>
-            <FileText size={16} /> PDF
+            <FileText size={16}/> PDF
           </button>
+
           <button style={btnExcel} onClick={gerarExcel}>
-            <FileSpreadsheet size={16} /> Excel
+            <FileSpreadsheet size={16}/> Excel
           </button>
+
           <button style={btnPrimary} onClick={novoUsuario}>
-            <Plus size={16} /> Novo usuário
+            <Plus size={16}/> Novo usuário
           </button>
+
         </div>
       }
     >
-      <input
-        placeholder="Buscar usuário..."
-        value={busca}
-        onChange={e => {
-          setBusca(e.target.value)
-          setPage(1)
-        }}
-        style={search}
-      />
 
       <CrudTable
         columns={[
-          { key: 'nome', label: 'Nome' },
-          { key: 'email', label: 'E-mail' },
-          { key: 'perfil', label: 'Perfil' },
+          {key:'nome',label:'Nome'},
+          {key:'email',label:'E-mail'},
+          {key:'perfil',label:'Perfil'},
+          {key:'ativo',label:'Status'},
           {
-            key: 'ativo',
-            label: 'Status',
-            render: u => (
-              <span style={u.ativo === 'Sim' ? badgeAtivo : badgeInativo}>
-                {u.ativo}
-              </span>
-            ),
-          },
-          {
-            key: 'actions',
-            label: 'Ações',
-            render: u => (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
-                <button style={btnIcon} onClick={() => editarUsuario(u)}>
-                  <Pencil size={14} />
+            key:'actions',
+            label:'Ações',
+            render:u=>(
+
+              <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
+
+                <button
+                  style={btnIcon}
+                  onClick={()=>{
+
+                    if(!canEdit('CAD_USUARIO')){
+                      avisar('Você não possui permissão para alterar usuários.')
+                      return
+                    }
+
+                    editarUsuario(u)
+
+                  }}
+                >
+                  <Pencil size={14}/>
                 </button>
-                <button style={btnInfo} onClick={() => setLog(u)}>
-                  <Clock size={14} />
+
+                <button
+                  style={btnInfo}
+                  onClick={()=>window.location.href=`/dashboard/usuarios/permissoes?user_id=${u.user_id}`}
+                >
+                  🔐
                 </button>
-                <button style={btnDelete} onClick={() => setConfirmar(u)}>
-                  <Trash2 size={14} />
+
+                <button
+                  style={btnInfo}
+                  onClick={()=>setLog(u)}
+                >
+                  <Clock size={14}/>
                 </button>
+
+                <button
+                  style={btnDelete}
+                  onClick={()=>{
+
+                    if(!canDelete('CAD_USUARIO')){
+                      avisar('Você não possui permissão para excluir usuários.')
+                      return
+                    }
+
+                    setConfirmar(u)
+                  }}
+                >
+                  <Trash2 size={14}/>
+                </button>
+
               </div>
-            ),
-          },
+
+            )
+          }
         ]}
         data={dados}
       />
@@ -237,18 +275,58 @@ export default function UsuariosPage() {
         onPageChange={setPage}
       />
 
-      {log && (
+      {open && (
         <div style={overlay}>
           <div style={modal}>
-            <h3>Log do registro</h3>
-            <p>Criado em: {new Date(log.created_at).toLocaleString()}</p>
-            <p>Atualizado em: {new Date(log.updated_at).toLocaleString()}</p>
-            <p>Alterado por: {log.user_id_log || '-'}</p>
+            <h3>{editando ? 'Editar usuário' : 'Novo usuário'}</h3>
+
+            <input
+              style={input}
+              placeholder="Nome"
+              value={form.nome}
+              onChange={e=>setForm({...form,nome:e.target.value})}
+            />
+
+            <input
+              style={input}
+              placeholder="Email"
+              value={form.email}
+              onChange={e=>setForm({...form,email:e.target.value})}
+            />
+
+            {!editando && (
+              <input
+                style={input}
+                placeholder="Senha"
+                type="password"
+                value={form.senha}
+                onChange={e=>setForm({...form,senha:e.target.value})}
+              />
+            )}
+
+            <select
+              style={input}
+              value={form.perfil}
+              onChange={e=>setForm({...form,perfil:e.target.value})}
+            >
+              <option value="Usuario">Usuário</option>
+              <option value="Administrador">Administrador</option>
+            </select>
+
+            <select
+              style={input}
+              value={form.ativo}
+              onChange={e=>setForm({...form,ativo:e.target.value})}
+            >
+              <option value="Sim">Ativo</option>
+              <option value="Não">Inativo</option>
+            </select>
+
             <div style={modalFooter}>
-              <button style={btnPrimary} onClick={() => setLog(null)}>
-                Fechar
-              </button>
+              <button style={btnIcon} onClick={()=>setOpen(false)}>Cancelar</button>
+              <button style={btnPrimary} onClick={salvar}>Salvar</button>
             </div>
+
           </div>
         </div>
       )}
@@ -257,213 +335,135 @@ export default function UsuariosPage() {
         <div style={overlay}>
           <div style={modal}>
             <h3>Confirmar exclusão</h3>
-            <p>
-              Você está prestes a remover o acesso do usuário{' '}
-              <strong>{confirmar.nome}</strong>.
+
+            <p style={{marginTop:10}}>
+              Excluir usuário <b>{confirmar.nome}</b>?
             </p>
+
             <div style={modalFooter}>
-              <button style={btnCancel} onClick={() => setConfirmar(null)}>
-                Cancelar
-              </button>
-              <button style={btnDelete} onClick={excluir}>
-                Confirmar exclusão
-              </button>
+              <button style={btnIcon} onClick={()=>setConfirmar(null)}>Cancelar</button>
+              <button style={btnDelete} onClick={excluir}>Excluir</button>
             </div>
+
           </div>
         </div>
       )}
 
-      {open && (
+      {log && (
         <div style={overlay}>
           <div style={modal}>
-            <div style={modalHeader}>
-              <h2>{editando ? 'Editar usuário' : 'Novo usuário'}</h2>
-              <X onClick={() => setOpen(false)} style={{ cursor: 'pointer' }} />
-            </div>
 
-            <div style={grid}>
-              <input
-                placeholder="Usuário"
-                value={form.user_id}
-                disabled={editando}
-                onChange={e => setForm({ ...form, user_id: e.target.value })}
-                style={input}
-              />
+            <h3>Log do usuário</h3>
 
-              <input
-                placeholder="Nome"
-                value={form.nome}
-                onChange={e => setForm({ ...form, nome: e.target.value })}
-                style={input}
-              />
-
-              <input
-                placeholder="E-mail *"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                style={input}
-              />
-
-              {!editando && (
-                <input
-                  placeholder="Senha"
-                  type="password"
-                  onChange={e => setForm({ ...form, senha: e.target.value })}
-                  style={input}
-                />
-              )}
-
-              <select
-                value={form.perfil}
-                onChange={e => setForm({ ...form, perfil: e.target.value })}
-                style={input}
-              >
-                <option value="Usuario">Usuário</option>
-                <option value="Administrador">Administrador</option>
-              </select>
-
-              <select
-                value={form.ativo}
-                onChange={e => setForm({ ...form, ativo: e.target.value })}
-                style={input}
-              >
-                <option value="Sim">Ativo</option>
-                <option value="Não">Inativo</option>
-              </select>
+            <div style={{marginTop:10,lineHeight:'22px'}}>
+              <div><b>ID:</b> {log.user_id}</div>
+              <div><b>Nome:</b> {log.nome}</div>
+              <div><b>Email:</b> {log.email}</div>
+              <div><b>Perfil:</b> {log.perfil}</div>
+              <div><b>Status:</b> {log.ativo}</div>
             </div>
 
             <div style={modalFooter}>
-              <button style={btnCancel} onClick={() => setOpen(false)}>
-                Cancelar
-              </button>
-              <button style={btnPrimary} onClick={salvar}>
-                Salvar
-              </button>
+              <button style={btnPrimary} onClick={()=>setLog(null)}>Fechar</button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {aviso && (
+        <div style={overlay}>
+          <div style={modal}>
+            <h3>Aviso</h3>
+            <p style={{marginTop:10}}>{aviso}</p>
+            <div style={modalFooter}>
+              <button style={btnPrimary} onClick={()=>setAviso(null)}>OK</button>
             </div>
           </div>
         </div>
       )}
+
     </CrudLayout>
   )
 }
 
-/* ===== STYLES ===== */
+const actions:CSSProperties={display:'flex',gap:10}
 
-const search: CSSProperties = {
-  width: 280,
-  padding: '8px 12px',
-  borderRadius: 6,
-  border: '1px solid #d1d5db',
-  marginBottom: 16,
+const btnPrimary:CSSProperties={
+  background:'#16a34a',
+  color:'#fff',
+  padding:'8px 14px',
+  borderRadius:6,
+  border:'none'
 }
 
-const actions: CSSProperties = { display: 'flex', gap: 10 }
-
-const btnPrimary: CSSProperties = {
-  background: '#16a34a',
-  color: '#fff',
-  padding: '8px 14px',
-  borderRadius: 6,
-  border: 'none',
+const btnExcel:CSSProperties={
+  background:'#166534',
+  color:'#fff',
+  padding:'8px 14px',
+  borderRadius:6,
+  border:'none'
 }
 
-const btnExcel: CSSProperties = {
-  background: '#166534',
-  color: '#fff',
-  padding: '8px 14px',
-  borderRadius: 6,
-  border: 'none',
+const btnDark:CSSProperties={
+  background:'#0b1a3a',
+  color:'#fff',
+  padding:'8px 14px',
+  borderRadius:6,
+  border:'none'
 }
 
-const btnDark: CSSProperties = {
-  background: '#0b1a3a',
-  color: '#fff',
-  padding: '8px 14px',
-  borderRadius: 6,
-  border: 'none',
+const btnIcon:CSSProperties={
+  background:'#e5e7eb',
+  border:'none',
+  borderRadius:6,
+  padding:'6px 10px'
 }
 
-const btnCancel: CSSProperties = {
-  background: '#e5e7eb',
-  padding: '8px 14px',
-  borderRadius: 6,
-  border: 'none',
+const btnInfo:CSSProperties={
+  background:'#0b1a3a',
+  color:'#fff',
+  border:'none',
+  borderRadius:6,
+  padding:'6px 10px'
 }
 
-const btnIcon: CSSProperties = {
-  background: '#e5e7eb',
-  border: 'none',
-  borderRadius: 6,
-  padding: 6,
+const btnDelete:CSSProperties={
+  background:'#dc2626',
+  color:'#fff',
+  border:'none',
+  borderRadius:6,
+  padding:'6px 10px'
 }
 
-const btnInfo: CSSProperties = {
-  background: '#0b1a3a',
-  color: '#fff',
-  border: 'none',
-  borderRadius: 6,
-  padding: 6,
+const overlay:CSSProperties={
+  position:'fixed',
+  inset:0,
+  background:'rgba(0,0,0,0.4)',
+  display:'flex',
+  justifyContent:'center',
+  alignItems:'center'
 }
 
-const btnDelete: CSSProperties = {
-  background: '#dc2626',
-  color: '#fff',
-  border: 'none',
-  borderRadius: 6,
-  padding: '6px 10px',
+const modal:CSSProperties={
+  background:'#fff',
+  borderRadius:12,
+  width:380,
+  padding:24,
+  display:'flex',
+  flexDirection:'column',
+  gap:10
 }
 
-const badgeAtivo: CSSProperties = {
-  background: '#e7f6ec',
-  color: '#1e7e34',
-  padding: '4px 10px',
-  borderRadius: 12,
+const modalFooter:CSSProperties={
+  display:'flex',
+  justifyContent:'flex-end',
+  gap:10,
+  marginTop:10
 }
 
-const badgeInativo: CSSProperties = {
-  background: '#fdecea',
-  color: '#c62828',
-  padding: '4px 10px',
-  borderRadius: 12,
-}
-
-const overlay: CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  background: 'rgba(0,0,0,0.4)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-}
-
-const modal: CSSProperties = {
-  background: '#fff',
-  borderRadius: 12,
-  width: 420,
-  padding: 24,
-}
-
-const modalHeader: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: 16,
-}
-
-const grid: CSSProperties = {
-  display: 'grid',
-  gap: 12,
-}
-
-const input: CSSProperties = {
-  padding: '10px 12px',
-  borderRadius: 6,
-  border: '1px solid #d1d5db',
-}
-
-const modalFooter: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: 10,
-  marginTop: 20,
+const input:CSSProperties={
+  padding:8,
+  border:'1px solid #ccc',
+  borderRadius:6
 }

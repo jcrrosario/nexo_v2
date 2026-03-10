@@ -54,6 +54,19 @@ export default function EntityLoginPage() {
         userId
     )
 
+    /* =====================================================
+       SALVAR USUÁRIO COMPLETO PARA SISTEMA DE PERMISSÕES
+       ===================================================== */
+
+    localStorage.setItem(
+      'usuario',
+      JSON.stringify({
+        user_id: data.usuario?.user_id || userId,
+        nome: data.usuario?.nome || data.user_nome || userId,
+        perfil: data.usuario?.perfil || 'Usuario',
+      })
+    )
+
     router.replace('/dashboard')
   }
 
