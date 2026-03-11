@@ -142,7 +142,7 @@ export default function VinculacaoOrganizacionalPage() {
   return (
     <div>
       <div style={topHeader}>
-        <h1 style={title}>Vinculação Organizacional</h1>
+        <h1 style={title}>Estrutura Organizacional</h1>
         <button style={btnNovo} onClick={abrirNovo}>
           <Plus size={14} /> Novo vínculo
         </button>

@@ -88,7 +88,7 @@ export default function EntityLayout({
             <div style={menuGroupHeader} onClick={() => toggle('cadastros')}>
               <div style={menuLabel}>
                 <Folder size={18} />
-                {!collapsed && <span>Cadastros</span>}
+                {!collapsed && <span>Módulo de Cadastros</span>}
               </div>
               {!collapsed &&
                 (openMenu === 'cadastros'
@@ -107,7 +107,7 @@ export default function EntityLayout({
                   }}
                   onClick={() => router.push('/dashboard/usuarios')}
                 >
-                  <Users size={16} /> Funcionários/Usuários
+                  <Users size={16} /> Usuários do sistema
                 </div>
 
                 <div
@@ -145,7 +145,7 @@ export default function EntityLayout({
                     router.push('/dashboard/vinculacao-organizacional')
                   }
                 >
-                  <Network size={16} /> Vinculação Organizacional
+                  <Network size={16} /> Estrutura Organizacional
                 </div>
 
                 <div
@@ -169,7 +169,7 @@ export default function EntityLayout({
             <div style={menuGroupHeader} onClick={() => toggle('pesquisas')}>
               <div style={menuLabel}>
                 <Search size={18} />
-                {!collapsed && <span>Pesquisas</span>}
+                {!collapsed && <span>Módulo de Pesquisas</span>}
               </div>
               {!collapsed &&
                 (openMenu === 'pesquisas'
@@ -211,7 +211,7 @@ export default function EntityLayout({
             <div style={menuGroupHeader} onClick={() => toggle('inventario')}>
               <div style={menuLabel}>
                 <ClipboardList size={18} />
-                {!collapsed && <span>Inventário</span>}
+                {!collapsed && <span>Módulo de Inventário</span>}
               </div>
               {!collapsed &&
                 (openMenu === 'inventario'
@@ -233,7 +233,7 @@ export default function EntityLayout({
             <div style={menuGroupHeader} onClick={() => toggle('plano')}>
               <div style={menuLabel}>
                 <ShieldAlert size={18} />
-                {!collapsed && <span>Plano de ação</span>}
+                {!collapsed && <span>Módulo de Plano de ação</span>}
               </div>
               {!collapsed &&
                 (openMenu === 'plano'
@@ -261,7 +261,7 @@ export default function EntityLayout({
             <div style={menuGroupHeader} onClick={() => toggle('coleta')}>
               <div style={menuLabel}>
                 <ClipboardList size={18} />
-                {!collapsed && <span>Coleta</span>}
+                {!collapsed && <span>Módulo de relatórios</span>}
               </div>
               {!collapsed &&
                 (openMenu === 'coleta'
@@ -283,7 +283,7 @@ export default function EntityLayout({
             <div style={menuGroupHeader} onClick={() => toggle('relatorios')}>
               <div style={menuLabel}>
                 <BarChart3 size={18} />
-                {!collapsed && <span>Relatórios</span>}
+                {!collapsed && <span>Módulo de análises gráficas</span>}
               </div>
               {!collapsed &&
                 (openMenu === 'relatorios'

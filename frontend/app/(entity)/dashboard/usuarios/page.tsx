@@ -182,7 +182,7 @@ export default function UsuariosPage() {
     <CrudLayout
       rotina="CAD_USUARIO"
       title="Usuários"
-      subtitle="Gerencie os funcionários/usuários do sistema"
+      subtitle="Gerencie os usuários do sistema"
       actions={
         <div style={actions}>
 
