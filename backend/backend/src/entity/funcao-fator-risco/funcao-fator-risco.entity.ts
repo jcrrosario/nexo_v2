@@ -23,6 +23,12 @@ export class FuncaoFatorRiscoEntity {
   @Column({ type: 'text', nullable: true })
   possiveis_consequencias: string
 
+  @Column({ type: 'text', nullable: true })
+  medidas_prevencao: string
+
+  @Column({ type: 'text', nullable: true })
+  epi: string
+
   @Column()
   idtb_empresas: number
 

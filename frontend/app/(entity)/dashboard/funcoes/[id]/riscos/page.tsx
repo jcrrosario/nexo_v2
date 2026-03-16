@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Plus, Trash2, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Pencil } from 'lucide-react'
 
 import CrudLayout from '../../../../components/CrudLayout'
 import CrudTable from '../../../../components/CrudTable'
@@ -14,6 +14,8 @@ type Risco = {
   fator_risco: string
   severidade: number
   possiveis_consequencias: string
+  medidas_prevencao: string
+  epi: string
 }
 
 const severidades = [
@@ -34,11 +36,14 @@ export default function FuncaoRiscosPage() {
   const [funcaoNome, setFuncaoNome] = useState('')
   const [open, setOpen] = useState(false)
   const [confirmar, setConfirmar] = useState<Risco | null>(null)
+  const [editando, setEditando] = useState<Risco | null>(null)
 
   const [form, setForm] = useState({
     fator_risco: '',
     severidade: 1,
     possiveis_consequencias: '',
+    medidas_prevencao: '',
+    epi: '',
   })
 
   async function carregar() {
@@ -57,20 +62,54 @@ export default function FuncaoRiscosPage() {
     carregarFuncao()
   }, [])
 
-  async function salvar() {
-    await api.post('/entity/funcao-fator', {
-      ...form,
-      func_id: Number(id),
-    })
-
-    setOpen(false)
-
+  function limparForm() {
     setForm({
       fator_risco: '',
       severidade: 1,
       possiveis_consequencias: '',
+      medidas_prevencao: '',
+      epi: '',
     })
+  }
 
+  function abrirNovo() {
+    setEditando(null)
+    limparForm()
+    setOpen(true)
+  }
+
+  function abrirEdicao(risco: Risco) {
+    setEditando(risco)
+    setForm({
+      fator_risco: risco.fator_risco || '',
+      severidade: risco.severidade || 1,
+      possiveis_consequencias: risco.possiveis_consequencias || '',
+      medidas_prevencao: risco.medidas_prevencao || '',
+      epi: risco.epi || '',
+    })
+    setOpen(true)
+  }
+
+  function fecharModal() {
+    setOpen(false)
+    setEditando(null)
+    limparForm()
+  }
+
+  async function salvar() {
+    if (editando) {
+      await api.put(`/entity/funcao-fator/${editando.func_fator_id}`, {
+        ...form,
+        func_id: Number(id),
+      })
+    } else {
+      await api.post('/entity/funcao-fator', {
+        ...form,
+        func_id: Number(id),
+      })
+    }
+
+    fecharModal()
     carregar()
   }
 
@@ -98,14 +137,12 @@ export default function FuncaoRiscosPage() {
             <ArrowLeft size={16} /> Voltar
           </button>
 
-          <button style={btnPrimary} onClick={() => setOpen(true)}>
+          <button style={btnPrimary} onClick={abrirNovo}>
             <Plus size={16} /> Novo risco
           </button>
         </div>
       }
     >
-
-      {/* AVISO NR1 */}
       <div style={infoBox}>
         <strong>Obs.</strong> Conforme a NR-1 e metodologias de gestão de risco,
         a severidade deve considerar sempre o <strong>valor máximo de risco identificado</strong>.
@@ -124,15 +161,32 @@ export default function FuncaoRiscosPage() {
             label: 'Consequências',
           },
           {
+            key: 'medidas_prevencao',
+            label: 'Medidas de prevenção',
+          },
+          {
+            key: 'epi',
+            label: 'EPI',
+          },
+          {
             key: 'actions',
             label: 'Ações',
             render: r => (
-              <button
-                style={btnDelete}
-                onClick={() => setConfirmar(r)}
-              >
-                <Trash2 size={14} />
-              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  style={btnEdit}
+                  onClick={() => abrirEdicao(r)}
+                >
+                  <Pencil size={14} />
+                </button>
+
+                <button
+                  style={btnDelete}
+                  onClick={() => setConfirmar(r)}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             ),
           },
         ]}
@@ -166,7 +220,7 @@ export default function FuncaoRiscosPage() {
       {open && (
         <div style={overlay}>
           <div style={modal}>
-            <h3>Novo risco</h3>
+            <h3>{editando ? 'Editar risco' : 'Novo risco'}</h3>
 
             <input
               placeholder="Fator de risco"
@@ -206,13 +260,37 @@ export default function FuncaoRiscosPage() {
               style={textarea}
             />
 
+            <textarea
+              placeholder="Medidas de prevenção"
+              value={form.medidas_prevencao}
+              onChange={e =>
+                setForm({
+                  ...form,
+                  medidas_prevencao: e.target.value,
+                })
+              }
+              style={textarea}
+            />
+
+            <textarea
+              placeholder="EPI"
+              value={form.epi}
+              onChange={e =>
+                setForm({
+                  ...form,
+                  epi: e.target.value,
+                })
+              }
+              style={textarea}
+            />
+
             <div style={footer}>
-              <button style={btnCancel} onClick={() => setOpen(false)}>
+              <button style={btnCancel} onClick={fecharModal}>
                 Cancelar
               </button>
 
               <button style={btnPrimary} onClick={salvar}>
-                Salvar
+                {editando ? 'Salvar alterações' : 'Salvar'}
               </button>
             </div>
           </div>
@@ -247,6 +325,14 @@ const btnSecondary = {
   border: 'none',
 }
 
+const btnEdit = {
+  background: '#2563eb',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 6,
+  padding: '6px 10px',
+}
+
 const btnDelete = {
   background: '#dc2626',
   color: '#fff',
@@ -263,7 +349,7 @@ const btnCancel = {
 }
 
 const overlay = {
-  position: 'fixed',
+  position: 'fixed' as const,
   inset: 0,
   background: 'rgba(0,0,0,0.4)',
   display: 'flex',
