@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, CSSProperties } from 'react'
+import { useEffect, useRef, useState, CSSProperties } from 'react'
 import {
   FileText,
   FileSpreadsheet,
@@ -8,6 +8,8 @@ import {
   Pencil,
   Trash2,
   Clock,
+  Upload,
+  Download,
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -72,6 +74,9 @@ export default function FuncionariosPage() {
   const [editando, setEditando] = useState(false)
   const [confirmar, setConfirmar] = useState<Funcionario | null>(null)
   const [log, setLog] = useState<Funcionario | null>(null)
+  const [importando, setImportando] = useState(false)
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const [form, setForm] = useState<any>({
     nome_completo: '',
@@ -200,6 +205,324 @@ export default function FuncionariosPage() {
     carregar()
   }
 
+  function abrirImportacao() {
+    fileInputRef.current?.click()
+  }
+
+  async function importarExcel(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      setImportando(true)
+
+      const buffer = await file.arrayBuffer()
+      const workbook = XLSX.read(buffer, { type: 'array' })
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+
+      const rows = XLSX.utils.sheet_to_json<(string | number | null)[]>(worksheet, {
+        header: 1,
+        raw: true,
+        defval: '',
+      })
+
+      const registros = rows
+        .slice(1)
+        .filter(
+          row =>
+            Array.isArray(row) &&
+            row.some(cell => String(cell || '').trim() !== ''),
+        )
+        .map(row => ({
+          nome_completo: row[0] ?? '',
+          cpf: row[1] ?? '',
+          rg: row[2] ?? '',
+          pis_pasep: row[3] ?? '',
+          data_nascimento: row[4] ?? '',
+          endereco: row[5] ?? '',
+          cep: row[6] ?? '',
+          bairro: row[7] ?? '',
+          municipio: row[8] ?? '',
+          sexo: row[9] ?? '',
+          estado_civil: row[10] ?? '',
+          grau_instrucao: row[11] ?? '',
+          carteira_trabalho: row[12] ?? '',
+          serie: row[13] ?? '',
+          uf: row[14] ?? '',
+          data_carteira_trabalho: row[15] ?? '',
+          data_admissao: row[16] ?? '',
+          data_demissao: row[17] ?? '',
+          funcao: row[18] ?? '',
+          departamento: row[19] ?? '',
+          salario_bruto: row[20] ?? 0,
+          encargos: row[21] ?? 0,
+          provisoes: row[22] ?? 0,
+          beneficios: row[23] ?? 0,
+        }))
+
+      const resultado = await api.post('/entity/funcionarios/importar', {
+        registros,
+      })
+
+      alert(
+        `Importação concluída.\nInseridos: ${resultado.inseridos}\nAtualizados: ${resultado.atualizados}\nDescartados: ${resultado.descartados}`,
+      )
+
+      await carregar()
+    } catch (error: any) {
+      alert(error?.message || 'Erro ao importar planilha')
+    } finally {
+      setImportando(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  function baixarModeloExcel() {
+    const cabecalhos = [[
+      'nome_completo',
+      'cpf',
+      'rg',
+      'pis_pasep',
+      'data_nascimento',
+      'endereco',
+      'cep',
+      'bairro',
+      'municipio',
+      'sexo',
+      'estado_civil',
+      'grau_instrucao',
+      'carteira_trabalho',
+      'serie',
+      'uf',
+      'data_carteira_trabalho',
+      'data_admissao',
+      'data_demissao',
+      'funcao',
+      'departamento',
+      'salario_bruto',
+      'encargos',
+      'provisoes',
+      'beneficios',
+    ]]
+
+    const exemplo = [[
+      'João da Silva',
+      '12345678901',
+      '1234567',
+      '12345678901',
+      '15/03/1990',
+      'Rua Exemplo, 123',
+      '80000000',
+      'Centro',
+      'Curitiba',
+      'Masculino',
+      'Solteiro(a)',
+      'Ensino Superior Completo',
+      '123456',
+      '001',
+      'PR',
+      '10/01/2010',
+      '01/02/2024',
+      '',
+      'Analista de Sistemas',
+      'Tecnologia',
+      '5500,00',
+      '1200,00',
+      '600,00',
+      '800,00',
+    ]]
+
+    const orientacoes = [[
+      'REGRAS IMPORTANTES:',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ], [
+      '1. CPF é obrigatório. Se estiver vazio, o registro será descartado.',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ], [
+      '2. Se o CPF já existir, o funcionário será atualizado.',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ], [
+      '3. Sexo aceito: Masculino, Feminino, Outro.',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ], [
+      '4. Estado civil aceito: Solteiro(a), Casado(a), Divorciado(a), Viúvo(a), União Estavel.',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ], [
+      '5. Função e departamento são buscados pelo nome.',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ]]
+
+    const dados = [...cabecalhos, ...exemplo, [], ...orientacoes]
+
+    const ws = XLSX.utils.aoa_to_sheet(dados)
+    const wb = XLSX.utils.book_new()
+
+    ws['!cols'] = [
+      { wch: 28 },
+      { wch: 18 },
+      { wch: 16 },
+      { wch: 18 },
+      { wch: 16 },
+      { wch: 28 },
+      { wch: 14 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 14 },
+      { wch: 18 },
+      { wch: 24 },
+      { wch: 20 },
+      { wch: 12 },
+      { wch: 8 },
+      { wch: 22 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 22 },
+      { wch: 22 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 16 },
+    ]
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Modelo Funcionarios')
+    XLSX.writeFile(wb, 'modelo_importacao_funcionarios.xlsx')
+  }
+
   function gerarPDF() {
     const doc = new jsPDF('l', 'mm', 'a4')
 
@@ -294,12 +617,37 @@ export default function FuncionariosPage() {
       subtitle="Cadastro de funcionários da empresa"
       actions={
         <div style={actions}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            style={{ display: 'none' }}
+            onChange={importarExcel}
+          />
+
+          <button
+            style={btnDownload}
+            onClick={baixarModeloExcel}
+          >
+            <Download size={16} /> Baixar Modelo
+          </button>
+
+          <button
+            style={btnImport}
+            onClick={abrirImportacao}
+            disabled={importando}
+          >
+            <Upload size={16} /> {importando ? 'Importando...' : 'Importar Excel'}
+          </button>
+
           <button style={btnDark} onClick={gerarPDF}>
             <FileText size={16} /> PDF
           </button>
+
           <button style={btnExcel} onClick={gerarExcel}>
             <FileSpreadsheet size={16} /> Excel
           </button>
+
           <button style={btnPrimary} onClick={novo}>
             <Plus size={16} /> Novo Funcionário
           </button>
@@ -527,7 +875,7 @@ export default function FuncionariosPage() {
                   <option value="Casado(a)">Casado(a)</option>
                   <option value="Divorciado(a)">Divorciado(a)</option>
                   <option value="Viúvo(a)">Viúvo(a)</option>
-                  <option value="União estável">União estável</option>
+                  <option value="União Estavel">União Estavel</option>
                 </select>
               </div>
 
@@ -753,6 +1101,7 @@ const search: CSSProperties = {
 const actions: CSSProperties = {
   display: 'flex',
   gap: 10,
+  flexWrap: 'wrap',
 }
 
 const btnPrimary: CSSProperties = {
@@ -773,6 +1122,22 @@ const btnExcel: CSSProperties = {
 
 const btnDark: CSSProperties = {
   background: '#0b1a3a',
+  color: '#fff',
+  padding: '8px 14px',
+  borderRadius: 6,
+  border: 'none',
+}
+
+const btnImport: CSSProperties = {
+  background: '#2563eb',
+  color: '#fff',
+  padding: '8px 14px',
+  borderRadius: 6,
+  border: 'none',
+}
+
+const btnDownload: CSSProperties = {
+  background: '#7c3aed',
   color: '#fff',
   padding: '8px 14px',
   borderRadius: 6,

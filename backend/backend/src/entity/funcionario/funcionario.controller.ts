@@ -41,6 +41,15 @@ export class FuncionarioController {
     })
   }
 
+  @Post('importar')
+  importar(@Req() req: any, @Body() body: any) {
+    return this.service.importar(
+      body?.registros || [],
+      req.user.idtb_empresas,
+      req.user.user_id,
+    )
+  }
+
   @Put(':id')
   atualizar(
     @Req() req: any,

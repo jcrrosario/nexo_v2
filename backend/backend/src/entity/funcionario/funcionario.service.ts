@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, Brackets } from 'typeorm'
+import { Brackets, Repository } from 'typeorm'
 import { FuncionarioEntity } from './funcionario.entity'
 import { FuncaoEntity } from '../funcao/funcao.entity'
 import { DepartamentoEntity } from '../departamento/departamento.entity'
@@ -190,16 +190,116 @@ export class FuncionarioService {
     return this.repo.save(funcionario)
   }
 
+  async importar(
+    registros: any[],
+    idtb_empresas: number,
+    user_id_log: string,
+  ) {
+    if (!Array.isArray(registros) || registros.length === 0) {
+      throw new BadRequestException('Nenhum registro enviado para importação')
+    }
+
+    let inseridos = 0
+    let atualizados = 0
+    let descartados = 0
+
+    for (const linha of registros) {
+      const cpfNormalizado = this.normalizarCpf(linha?.cpf)
+
+      if (!cpfNormalizado) {
+        descartados++
+        continue
+      }
+
+      const funcaoId = await this.buscarFuncaoIdPorNome(
+        linha?.funcao,
+        idtb_empresas,
+      )
+
+      const departamentoId = await this.buscarDepartamentoIdPorNome(
+        linha?.departamento,
+        idtb_empresas,
+      )
+
+      const payload = this.normalizarDados({
+        idtb_empresas,
+        user_id_log,
+        nome_completo: linha?.nome_completo || '',
+        cpf: cpfNormalizado,
+        rg: linha?.rg || null,
+        pis_pasep: linha?.pis_pasep || null,
+        data_nascimento: this.normalizarData(linha?.data_nascimento),
+        endereco: linha?.endereco || null,
+        cep: linha?.cep || null,
+        bairro: linha?.bairro || null,
+        municipio: linha?.municipio || null,
+        sexo: this.normalizarSexo(linha?.sexo),
+        estado_civil: this.normalizarEstadoCivil(linha?.estado_civil),
+        grau_instrucao: linha?.grau_instrucao || null,
+        carteira_trabalho: linha?.carteira_trabalho || null,
+        serie: linha?.serie || null,
+        uf: linha?.uf ? String(linha.uf).trim().toUpperCase().slice(0, 2) : null,
+        data_carteira_trabalho: this.normalizarData(
+          linha?.data_carteira_trabalho,
+        ),
+        data_admissao: this.normalizarData(linha?.data_admissao),
+        data_demissao: this.normalizarData(linha?.data_demissao),
+        funcao_id: funcaoId,
+        dpto_id: departamentoId,
+        salario_bruto: this.normalizarNumero(linha?.salario_bruto),
+        encargos: this.normalizarNumero(linha?.encargos),
+        provisoes: this.normalizarNumero(linha?.provisoes),
+        beneficios: this.normalizarNumero(linha?.beneficios),
+      })
+
+      const existente = await this.repo.findOne({
+        where: {
+          idtb_empresas,
+          cpf: cpfNormalizado,
+        },
+      })
+
+      if (existente) {
+        Object.assign(existente, payload, {
+          user_id_log,
+          excluido: 'Não',
+        })
+        await this.repo.save(existente)
+        atualizados++
+      } else {
+        const novo = this.repo.create({
+          ...payload,
+          user_id_log,
+          excluido: 'Não',
+        })
+        await this.repo.save(novo)
+        inseridos++
+      }
+    }
+
+    return {
+      message: 'Importação concluída com sucesso',
+      inseridos,
+      atualizados,
+      descartados,
+      total_processado: registros.length,
+    }
+  }
+
   private normalizarDados(data: any) {
     return {
       ...data,
       idtb_empresas: Number(data.idtb_empresas),
       funcao_id:
-        data.funcao_id !== '' && data.funcao_id !== null && data.funcao_id !== undefined
+        data.funcao_id !== '' &&
+        data.funcao_id !== null &&
+        data.funcao_id !== undefined
           ? Number(data.funcao_id)
           : null,
       dpto_id:
-        data.dpto_id !== '' && data.dpto_id !== null && data.dpto_id !== undefined
+        data.dpto_id !== '' &&
+        data.dpto_id !== null &&
+        data.dpto_id !== undefined
           ? Number(data.dpto_id)
           : null,
       salario_bruto: Number(data.salario_bruto || 0),
@@ -268,5 +368,151 @@ export class FuncionarioService {
         throw new BadRequestException('Departamento não encontrado')
       }
     }
+  }
+
+  private normalizarCpf(value: any) {
+    if (value === null || value === undefined) return ''
+    return String(value).replace(/\D/g, '').trim()
+  }
+
+  private normalizarSexo(value: any) {
+    const texto = String(value || '').trim().toLowerCase()
+
+    if (texto === 'masculino') return 'Masculino'
+    if (texto === 'feminino') return 'Feminino'
+    if (texto === 'outro') return 'Outro'
+
+    return 'Outro'
+  }
+
+  private normalizarEstadoCivil(value: any) {
+    const texto = String(value || '').trim().toLowerCase()
+
+    if (texto === 'solteiro(a)' || texto === 'solteiro' || texto === 'solteira') {
+      return 'Solteiro(a)'
+    }
+
+    if (texto === 'casado(a)' || texto === 'casado' || texto === 'casada') {
+      return 'Casado(a)'
+    }
+
+    if (
+      texto === 'divorciado(a)' ||
+      texto === 'divorciado' ||
+      texto === 'divorciada'
+    ) {
+      return 'Divorciado(a)'
+    }
+
+    if (texto === 'viúvo(a)' || texto === 'viuvo(a)' || texto === 'viuvo' || texto === 'viúva' || texto === 'viuva') {
+      return 'Viúvo(a)'
+    }
+
+    if (
+      texto === 'união estavel' ||
+      texto === 'uniao estavel' ||
+      texto === 'união estável' ||
+      texto === 'uniao estável'
+    ) {
+      return 'União Estavel'
+    }
+
+    return null
+  }
+
+  private normalizarNumero(value: any) {
+    if (value === null || value === undefined || value === '') return 0
+
+    const texto = String(value).trim()
+
+    if (!texto) return 0
+
+    const normalizado = texto.includes(',')
+      ? texto.replace(/\./g, '').replace(',', '.')
+      : texto
+
+    const numero = Number(normalizado)
+    return isNaN(numero) ? 0 : numero
+  }
+
+  private normalizarData(value: any) {
+    if (!value) return null
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value.toISOString().slice(0, 10)
+    }
+
+    if (typeof value === 'number') {
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30))
+      const data = new Date(excelEpoch.getTime() + value * 86400000)
+      if (!isNaN(data.getTime())) {
+        return data.toISOString().slice(0, 10)
+      }
+    }
+
+    const texto = String(value).trim()
+    if (!texto) return null
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+      return texto
+    }
+
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
+      const [dia, mes, ano] = texto.split('/')
+      return `${ano}-${mes}-${dia}`
+    }
+
+    const data = new Date(texto)
+    if (!isNaN(data.getTime())) {
+      return data.toISOString().slice(0, 10)
+    }
+
+    return null
+  }
+
+  private async buscarFuncaoIdPorNome(
+    nome: any,
+    idtb_empresas: number,
+  ): Promise<number | null> {
+    const texto = String(nome || '').trim()
+    if (!texto) return null
+
+    const funcao = await this.funcaoRepo
+      .createQueryBuilder('f')
+      .where('f.idtb_empresas = :idtb_empresas', { idtb_empresas })
+      .andWhere('LOWER(f.nome) = LOWER(:nome)', { nome: texto })
+      .andWhere(
+        new Brackets(qb => {
+          qb
+            .where('f.excluido = :excluido1', { excluido1: 'Não' })
+            .orWhere('f.excluido = :excluido2', { excluido2: 'Nao' })
+        }),
+      )
+      .getOne()
+
+    return funcao ? Number((funcao as any).func_id) : null
+  }
+
+  private async buscarDepartamentoIdPorNome(
+    nome: any,
+    idtb_empresas: number,
+  ): Promise<number | null> {
+    const texto = String(nome || '').trim()
+    if (!texto) return null
+
+    const departamento = await this.departamentoRepo
+      .createQueryBuilder('d')
+      .where('d.idtb_empresas = :idtb_empresas', { idtb_empresas })
+      .andWhere('LOWER(d.nome) = LOWER(:nome)', { nome: texto })
+      .andWhere(
+        new Brackets(qb => {
+          qb
+            .where('d.excluido = :excluido1', { excluido1: 'Não' })
+            .orWhere('d.excluido = :excluido2', { excluido2: 'Nao' })
+        }),
+      )
+      .getOne()
+
+    return departamento ? Number((departamento as any).dpto_id) : null
   }
 }
