@@ -10,11 +10,7 @@ import {
   Briefcase,
   Network,
   AlertTriangle,
-  Flame,
-  Factory,
   ShieldAlert,
-  Wrench,
-  HardHat,
   ClipboardList,
   Search,
   FileText,
@@ -23,6 +19,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  UserSquare2,
 } from 'lucide-react'
 import EntityHeader from '../components/EntityHeader'
 
@@ -70,7 +67,6 @@ export default function EntityLayout({
         </div>
 
         <nav style={menu}>
-          {/* DASHBOARD */}
           <div
             style={{
               ...menuItem,
@@ -83,7 +79,6 @@ export default function EntityLayout({
             {!collapsed && <span>Dashboard</span>}
           </div>
 
-          {/* CADASTROS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('cadastros')}>
               <div style={menuLabel}>
@@ -137,6 +132,18 @@ export default function EntityLayout({
                 <div
                   style={{
                     ...submenuItem,
+                    ...(isActive('/dashboard/funcionarios')
+                      ? submenuActive
+                      : {}),
+                  }}
+                  onClick={() => router.push('/dashboard/funcionarios')}
+                >
+                  <UserSquare2 size={16} /> Funcionários
+                </div>
+
+                <div
+                  style={{
+                    ...submenuItem,
                     ...(isActive('/dashboard/vinculacao-organizacional')
                       ? submenuActive
                       : {}),
@@ -159,12 +166,10 @@ export default function EntityLayout({
                 >
                   <AlertTriangle size={16} /> Categoria de pesquisas
                 </div>
-
               </div>
             )}
           </div>
 
-          {/* PESQUISAS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('pesquisas')}>
               <div style={menuLabel}>
@@ -206,7 +211,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* INVENTÁRIO */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('inventario')}>
               <div style={menuLabel}>
@@ -228,7 +232,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* PLANO DE AÇÃO */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('plano')}>
               <div style={menuLabel}>
@@ -256,7 +259,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* COLETA */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('coleta')}>
               <div style={menuLabel}>
@@ -278,7 +280,6 @@ export default function EntityLayout({
             )}
           </div>
 
-          {/* RELATÓRIOS */}
           <div>
             <div style={menuGroupHeader} onClick={() => toggle('relatorios')}>
               <div style={menuLabel}>
@@ -346,7 +347,7 @@ const menu = {
 }
 
 const menuItem = {
-  position: 'relative',
+  position: 'relative' as const,
   padding: '12px 14px',
   borderRadius: 10,
   cursor: 'pointer',
@@ -362,7 +363,7 @@ const menuActive = {
 }
 
 const activeBar = {
-  position: 'absolute',
+  position: 'absolute' as const,
   left: 0,
   top: 8,
   bottom: 8,
@@ -410,7 +411,7 @@ const submenuActive = {
 const content = {
   flex: 1,
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'column' as const,
 }
 
 const main = {
