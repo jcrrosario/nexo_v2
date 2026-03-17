@@ -21,6 +21,49 @@ import { api } from '@/lib/api'
 
 type Funcionario = {
   funcionario_id: number
+  nome_completo: string | null
+  cpf: string | null
+  rg: string | null
+  pis_pasep: string | null
+  data_nascimento: string | null
+  endereco: string | null
+  cep: string | null
+  bairro: string | null
+  municipio: string | null
+  sexo: string | null
+  estado_civil: string | null
+  grau_instrucao: string | null
+  carteira_trabalho: string | null
+  serie: string | null
+  uf: string | null
+  data_carteira_trabalho: string | null
+  data_admissao: string | null
+  data_demissao: string | null
+  funcao_id: number | null
+  dpto_id: number | null
+  salario_bruto: number | null
+  encargos: number | null
+  provisoes: number | null
+  beneficios: number | null
+  funcao_nome?: string | null
+  departamento_nome?: string | null
+  created_at: string
+  updated_at: string
+  user_id_log: string | null
+}
+
+type Funcao = {
+  func_id: number
+  nome: string
+}
+
+type Departamento = {
+  dpto_id: number
+  nome: string
+}
+
+type FormState = {
+  funcionario_id?: number
   nome_completo: string
   cpf: string
   rg: string
@@ -39,27 +82,39 @@ type Funcionario = {
   data_carteira_trabalho: string
   data_admissao: string
   data_demissao: string
-  funcao_id: number | null
-  dpto_id: number | null
-  salario_bruto: number
-  encargos: number
-  provisoes: number
-  beneficios: number
-  funcao_nome?: string
-  departamento_nome?: string
-  created_at: string
-  updated_at: string
-  user_id_log: string
+  funcao_id: number | string
+  dpto_id: number | string
+  salario_bruto: number | string
+  encargos: number | string
+  provisoes: number | string
+  beneficios: number | string
 }
 
-type Funcao = {
-  func_id: number
-  nome: string
-}
-
-type Departamento = {
-  dpto_id: number
-  nome: string
+const initialForm: FormState = {
+  nome_completo: '',
+  cpf: '',
+  rg: '',
+  pis_pasep: '',
+  data_nascimento: '',
+  endereco: '',
+  cep: '',
+  bairro: '',
+  municipio: '',
+  sexo: '',
+  estado_civil: '',
+  grau_instrucao: '',
+  carteira_trabalho: '',
+  serie: '',
+  uf: '',
+  data_carteira_trabalho: '',
+  data_admissao: '',
+  data_demissao: '',
+  funcao_id: '',
+  dpto_id: '',
+  salario_bruto: 0,
+  encargos: 0,
+  provisoes: 0,
+  beneficios: 0,
 }
 
 export default function FuncionariosPage() {
@@ -78,32 +133,7 @@ export default function FuncionariosPage() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const [form, setForm] = useState<any>({
-    nome_completo: '',
-    cpf: '',
-    rg: '',
-    pis_pasep: '',
-    data_nascimento: '',
-    endereco: '',
-    cep: '',
-    bairro: '',
-    municipio: '',
-    sexo: '',
-    estado_civil: '',
-    grau_instrucao: '',
-    carteira_trabalho: '',
-    serie: '',
-    uf: '',
-    data_carteira_trabalho: '',
-    data_admissao: '',
-    data_demissao: '',
-    funcao_id: '',
-    dpto_id: '',
-    salario_bruto: 0,
-    encargos: 0,
-    provisoes: 0,
-    beneficios: 0,
-  })
+  const [form, setForm] = useState<FormState>(initialForm)
 
   const pageSize = 5
 
@@ -120,10 +150,10 @@ export default function FuncionariosPage() {
       `/entity/departamentos?page=1&limit=1000&search=`,
     )
 
-    setDados(res.data)
-    setTotal(res.total)
-    setFuncoes(resFuncoes.data)
-    setDepartamentos(resDepartamentos.data)
+    setDados(res.data || [])
+    setTotal(res.total || 0)
+    setFuncoes(resFuncoes.data || [])
+    setDepartamentos(resDepartamentos.data || [])
   }
 
   useEffect(() => {
@@ -131,49 +161,38 @@ export default function FuncionariosPage() {
   }, [page, busca])
 
   function novo() {
-    setForm({
-      nome_completo: '',
-      cpf: '',
-      rg: '',
-      pis_pasep: '',
-      data_nascimento: '',
-      endereco: '',
-      cep: '',
-      bairro: '',
-      municipio: '',
-      sexo: '',
-      estado_civil: '',
-      grau_instrucao: '',
-      carteira_trabalho: '',
-      serie: '',
-      uf: '',
-      data_carteira_trabalho: '',
-      data_admissao: '',
-      data_demissao: '',
-      funcao_id: '',
-      dpto_id: '',
-      salario_bruto: 0,
-      encargos: 0,
-      provisoes: 0,
-      beneficios: 0,
-    })
+    setForm(initialForm)
     setEditando(false)
     setOpen(true)
   }
 
   function editar(item: Funcionario) {
     setForm({
-      ...item,
+      funcionario_id: item.funcionario_id,
+      nome_completo: item.nome_completo || '',
+      cpf: item.cpf || '',
+      rg: item.rg || '',
+      pis_pasep: item.pis_pasep || '',
+      data_nascimento: formatDateInput(item.data_nascimento) || '',
+      endereco: item.endereco || '',
+      cep: item.cep || '',
+      bairro: item.bairro || '',
+      municipio: item.municipio || '',
+      sexo: item.sexo || '',
+      estado_civil: item.estado_civil || '',
+      grau_instrucao: item.grau_instrucao || '',
+      carteira_trabalho: item.carteira_trabalho || '',
+      serie: item.serie || '',
+      uf: item.uf || '',
+      data_carteira_trabalho: formatDateInput(item.data_carteira_trabalho) || '',
+      data_admissao: formatDateInput(item.data_admissao) || '',
+      data_demissao: formatDateInput(item.data_demissao) || '',
       funcao_id: item.funcao_id || '',
       dpto_id: item.dpto_id || '',
       salario_bruto: item.salario_bruto || 0,
       encargos: item.encargos || 0,
       provisoes: item.provisoes || 0,
       beneficios: item.beneficios || 0,
-      data_nascimento: formatDateInput(item.data_nascimento),
-      data_carteira_trabalho: formatDateInput(item.data_carteira_trabalho),
-      data_admissao: formatDateInput(item.data_admissao),
-      data_demissao: formatDateInput(item.data_demissao),
     })
     setEditando(true)
     setOpen(true)
@@ -186,23 +205,43 @@ export default function FuncionariosPage() {
       encargos: Number(form.encargos || 0),
       provisoes: Number(form.provisoes || 0),
       beneficios: Number(form.beneficios || 0),
+      funcao_id: form.funcao_id === '' ? null : Number(form.funcao_id),
+      dpto_id: form.dpto_id === '' ? null : Number(form.dpto_id),
+      nome_completo: form.nome_completo || '',
+      cpf: form.cpf || '',
+      rg: form.rg || '',
+      pis_pasep: form.pis_pasep || '',
+      data_nascimento: form.data_nascimento || null,
+      endereco: form.endereco || '',
+      cep: form.cep || '',
+      bairro: form.bairro || '',
+      municipio: form.municipio || '',
+      sexo: form.sexo || '',
+      estado_civil: form.estado_civil || '',
+      grau_instrucao: form.grau_instrucao || '',
+      carteira_trabalho: form.carteira_trabalho || '',
+      serie: form.serie || '',
+      uf: form.uf || '',
+      data_carteira_trabalho: form.data_carteira_trabalho || null,
+      data_admissao: form.data_admissao || null,
+      data_demissao: form.data_demissao || null,
     }
 
-    if (editando) {
+    if (editando && form.funcionario_id) {
       await api.put(`/entity/funcionarios/${form.funcionario_id}`, payload)
     } else {
       await api.post('/entity/funcionarios', payload)
     }
 
     setOpen(false)
-    carregar()
+    await carregar()
   }
 
   async function excluir() {
     if (!confirmar) return
     await api.put(`/entity/funcionarios/${confirmar.funcionario_id}/excluir`, {})
     setConfirmar(null)
-    carregar()
+    await carregar()
   }
 
   function abrirImportacao() {
@@ -487,9 +526,9 @@ export default function FuncionariosPage() {
       '',
     ]]
 
-    const dados = [...cabecalhos, ...exemplo, [], ...orientacoes]
+    const dadosModelo = [...cabecalhos, ...exemplo, [], ...orientacoes]
 
-    const ws = XLSX.utils.aoa_to_sheet(dados)
+    const ws = XLSX.utils.aoa_to_sheet(dadosModelo)
     const wb = XLSX.utils.book_new()
 
     ws['!cols'] = [
@@ -541,8 +580,8 @@ export default function FuncionariosPage() {
         d.cpf || '',
         d.funcao_nome || '',
         d.departamento_nome || '',
-        formatDateBR(d.data_admissao),
-        formatMoney(d.salario_bruto),
+        formatDateBR(d.data_admissao || ''),
+        formatMoney(d.salario_bruto || 0),
       ]),
       styles: {
         fontSize: 9,
@@ -576,11 +615,11 @@ export default function FuncionariosPage() {
 
   function gerarExcel() {
     const worksheetData = dados.map(d => ({
-      'Nome Completo': d.nome_completo,
+      'Nome Completo': d.nome_completo || '',
       CPF: d.cpf || '',
       RG: d.rg || '',
       'PIS/PASEP': d.pis_pasep || '',
-      'Data Nascimento': formatDateBR(d.data_nascimento),
+      'Data Nascimento': formatDateBR(d.data_nascimento || ''),
       Endereço: d.endereco || '',
       CEP: d.cep || '',
       Bairro: d.bairro || '',
@@ -591,9 +630,9 @@ export default function FuncionariosPage() {
       'Carteira de Trabalho': d.carteira_trabalho || '',
       Série: d.serie || '',
       UF: d.uf || '',
-      'Data Carteira de Trabalho': formatDateBR(d.data_carteira_trabalho),
-      'Data de Admissão': formatDateBR(d.data_admissao),
-      'Data de Demissão': formatDateBR(d.data_demissao),
+      'Data Carteira de Trabalho': formatDateBR(d.data_carteira_trabalho || ''),
+      'Data de Admissão': formatDateBR(d.data_admissao || ''),
+      'Data de Demissão': formatDateBR(d.data_demissao || ''),
       Função: d.funcao_nome || '',
       Setor: d.departamento_nome || '',
       'Salário Bruto': d.salario_bruto || 0,
@@ -625,10 +664,7 @@ export default function FuncionariosPage() {
             onChange={importarExcel}
           />
 
-          <button
-            style={btnDownload}
-            onClick={baixarModeloExcel}
-          >
+          <button style={btnDownload} onClick={baixarModeloExcel}>
             <Download size={16} /> Baixar Modelo
           </button>
 
@@ -673,7 +709,7 @@ export default function FuncionariosPage() {
           {
             key: 'salario_bruto',
             label: 'Salário',
-            render: d => formatMoney(d.salario_bruto),
+            render: d => formatMoney(d.salario_bruto || 0),
           },
           {
             key: 'actions',
@@ -725,7 +761,7 @@ export default function FuncionariosPage() {
             <h3>Confirmar exclusão</h3>
             <p>
               Deseja excluir o funcionário{' '}
-              <strong>{confirmar.nome_completo}</strong>?
+              <strong>{confirmar.nome_completo || ''}</strong>?
             </p>
             <div style={modalFooter}>
               <button style={btnCancel} onClick={() => setConfirmar(null)}>
@@ -751,7 +787,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Nome Completo</label>
                 <input
                   placeholder="Digite o nome completo"
-                  value={form.nome_completo}
+                  value={form.nome_completo || ''}
                   onChange={e =>
                     setForm({ ...form, nome_completo: e.target.value })
                   }
@@ -763,7 +799,7 @@ export default function FuncionariosPage() {
                 <label style={label}>CPF</label>
                 <input
                   placeholder="Digite o CPF"
-                  value={form.cpf}
+                  value={form.cpf || ''}
                   onChange={e => setForm({ ...form, cpf: e.target.value })}
                   style={input}
                 />
@@ -773,7 +809,7 @@ export default function FuncionariosPage() {
                 <label style={label}>RG</label>
                 <input
                   placeholder="Digite o RG"
-                  value={form.rg}
+                  value={form.rg || ''}
                   onChange={e => setForm({ ...form, rg: e.target.value })}
                   style={input}
                 />
@@ -783,7 +819,7 @@ export default function FuncionariosPage() {
                 <label style={label}>PIS/PASEP</label>
                 <input
                   placeholder="Digite o PIS/PASEP"
-                  value={form.pis_pasep}
+                  value={form.pis_pasep || ''}
                   onChange={e =>
                     setForm({ ...form, pis_pasep: e.target.value })
                   }
@@ -795,7 +831,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Data de Nascimento</label>
                 <input
                   type="date"
-                  value={form.data_nascimento}
+                  value={form.data_nascimento || ''}
                   onChange={e =>
                     setForm({ ...form, data_nascimento: e.target.value })
                   }
@@ -807,7 +843,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Endereço</label>
                 <input
                   placeholder="Digite o endereço"
-                  value={form.endereco}
+                  value={form.endereco || ''}
                   onChange={e =>
                     setForm({ ...form, endereco: e.target.value })
                   }
@@ -819,7 +855,7 @@ export default function FuncionariosPage() {
                 <label style={label}>CEP</label>
                 <input
                   placeholder="Digite o CEP"
-                  value={form.cep}
+                  value={form.cep || ''}
                   onChange={e => setForm({ ...form, cep: e.target.value })}
                   style={input}
                 />
@@ -829,7 +865,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Bairro</label>
                 <input
                   placeholder="Digite o bairro"
-                  value={form.bairro}
+                  value={form.bairro || ''}
                   onChange={e => setForm({ ...form, bairro: e.target.value })}
                   style={input}
                 />
@@ -839,7 +875,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Município</label>
                 <input
                   placeholder="Digite o município"
-                  value={form.municipio}
+                  value={form.municipio || ''}
                   onChange={e =>
                     setForm({ ...form, municipio: e.target.value })
                   }
@@ -850,7 +886,7 @@ export default function FuncionariosPage() {
               <div>
                 <label style={label}>Sexo</label>
                 <select
-                  value={form.sexo}
+                  value={form.sexo || ''}
                   onChange={e => setForm({ ...form, sexo: e.target.value })}
                   style={input}
                 >
@@ -864,7 +900,7 @@ export default function FuncionariosPage() {
               <div>
                 <label style={label}>Estado Civil</label>
                 <select
-                  value={form.estado_civil}
+                  value={form.estado_civil || ''}
                   onChange={e =>
                     setForm({ ...form, estado_civil: e.target.value })
                   }
@@ -883,7 +919,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Grau de Instrução</label>
                 <input
                   placeholder="Digite o grau de instrução"
-                  value={form.grau_instrucao}
+                  value={form.grau_instrucao || ''}
                   onChange={e =>
                     setForm({ ...form, grau_instrucao: e.target.value })
                   }
@@ -895,7 +931,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Carteira de Trabalho</label>
                 <input
                   placeholder="Digite o número"
-                  value={form.carteira_trabalho}
+                  value={form.carteira_trabalho || ''}
                   onChange={e =>
                     setForm({ ...form, carteira_trabalho: e.target.value })
                   }
@@ -907,7 +943,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Série</label>
                 <input
                   placeholder="Digite a série"
-                  value={form.serie}
+                  value={form.serie || ''}
                   onChange={e => setForm({ ...form, serie: e.target.value })}
                   style={input}
                 />
@@ -918,7 +954,7 @@ export default function FuncionariosPage() {
                 <input
                   placeholder="UF"
                   maxLength={2}
-                  value={form.uf}
+                  value={form.uf || ''}
                   onChange={e => setForm({ ...form, uf: e.target.value })}
                   style={input}
                 />
@@ -928,7 +964,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Data da Carteira de Trabalho</label>
                 <input
                   type="date"
-                  value={form.data_carteira_trabalho}
+                  value={form.data_carteira_trabalho || ''}
                   onChange={e =>
                     setForm({
                       ...form,
@@ -943,7 +979,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Data de Admissão</label>
                 <input
                   type="date"
-                  value={form.data_admissao}
+                  value={form.data_admissao || ''}
                   onChange={e =>
                     setForm({ ...form, data_admissao: e.target.value })
                   }
@@ -955,7 +991,7 @@ export default function FuncionariosPage() {
                 <label style={label}>Data de Demissão</label>
                 <input
                   type="date"
-                  value={form.data_demissao}
+                  value={form.data_demissao || ''}
                   onChange={e =>
                     setForm({ ...form, data_demissao: e.target.value })
                   }
@@ -970,7 +1006,7 @@ export default function FuncionariosPage() {
               <div>
                 <label style={label}>Função</label>
                 <select
-                  value={form.funcao_id}
+                  value={form.funcao_id || ''}
                   onChange={e => setForm({ ...form, funcao_id: e.target.value })}
                   style={input}
                 >
@@ -986,7 +1022,7 @@ export default function FuncionariosPage() {
               <div>
                 <label style={label}>Setor</label>
                 <select
-                  value={form.dpto_id}
+                  value={form.dpto_id || ''}
                   onChange={e => setForm({ ...form, dpto_id: e.target.value })}
                   style={input}
                 >
@@ -1008,7 +1044,7 @@ export default function FuncionariosPage() {
                 <input
                   type="number"
                   step="0.01"
-                  value={form.salario_bruto}
+                  value={form.salario_bruto ?? 0}
                   onChange={e =>
                     setForm({ ...form, salario_bruto: e.target.value })
                   }
@@ -1021,7 +1057,7 @@ export default function FuncionariosPage() {
                 <input
                   type="number"
                   step="0.01"
-                  value={form.encargos}
+                  value={form.encargos ?? 0}
                   onChange={e => setForm({ ...form, encargos: e.target.value })}
                   style={input}
                 />
@@ -1032,7 +1068,7 @@ export default function FuncionariosPage() {
                 <input
                   type="number"
                   step="0.01"
-                  value={form.provisoes}
+                  value={form.provisoes ?? 0}
                   onChange={e =>
                     setForm({ ...form, provisoes: e.target.value })
                   }
@@ -1045,7 +1081,7 @@ export default function FuncionariosPage() {
                 <input
                   type="number"
                   step="0.01"
-                  value={form.beneficios}
+                  value={form.beneficios ?? 0}
                   onChange={e =>
                     setForm({ ...form, beneficios: e.target.value })
                   }
@@ -1069,19 +1105,19 @@ export default function FuncionariosPage() {
   )
 }
 
-function formatDateInput(value?: string) {
+function formatDateInput(value?: string | null) {
   if (!value) return ''
-  return value.slice(0, 10)
+  return String(value).slice(0, 10)
 }
 
-function formatDateBR(value?: string) {
+function formatDateBR(value?: string | null) {
   if (!value) return ''
   const data = new Date(value)
   if (isNaN(data.getTime())) return ''
   return data.toLocaleDateString('pt-BR')
 }
 
-function formatMoney(value?: number) {
+function formatMoney(value?: number | null) {
   return Number(value || 0).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',

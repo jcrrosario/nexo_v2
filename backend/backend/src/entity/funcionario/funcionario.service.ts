@@ -30,8 +30,16 @@ export class FuncionarioService {
   ) {
     const qb = this.repo
       .createQueryBuilder('f')
-      .leftJoin(FuncaoEntity, 'fu', 'fu.func_id = f.funcao_id')
-      .leftJoin(DepartamentoEntity, 'd', 'd.dpto_id = f.dpto_id')
+      .leftJoin(
+        FuncaoEntity,
+        'fu',
+        'fu.func_id = f.funcao_id AND fu.idtb_empresas = f.idtb_empresas',
+      )
+      .leftJoin(
+        DepartamentoEntity,
+        'd',
+        'd.dpto_id = f.dpto_id AND d.idtb_empresas = f.idtb_empresas',
+      )
       .select([
         'f.funcionario_id as funcionario_id',
         'f.idtb_empresas as idtb_empresas',
@@ -66,14 +74,13 @@ export class FuncionarioService {
         'd.nome as departamento_nome',
       ])
 
-    qb.where('f.idtb_empresas = :idtb_empresas', { idtb_empresas })
-      .andWhere(
-        new Brackets(qb1 => {
-          qb1
-            .where('f.excluido = :excluido1', { excluido1: 'Não' })
-            .orWhere('f.excluido = :excluido2', { excluido2: 'Nao' })
-        }),
-      )
+    qb.where('f.idtb_empresas = :idtb_empresas', { idtb_empresas }).andWhere(
+      new Brackets(qb1 => {
+        qb1
+          .where('f.excluido = :excluido1', { excluido1: 'Não' })
+          .orWhere('f.excluido = :excluido2', { excluido2: 'Nao' })
+      }),
+    )
 
     if (search) {
       qb.andWhere(
@@ -404,7 +411,13 @@ export class FuncionarioService {
       return 'Divorciado(a)'
     }
 
-    if (texto === 'viúvo(a)' || texto === 'viuvo(a)' || texto === 'viuvo' || texto === 'viúva' || texto === 'viuva') {
+    if (
+      texto === 'viúvo(a)' ||
+      texto === 'viuvo(a)' ||
+      texto === 'viuvo' ||
+      texto === 'viúva' ||
+      texto === 'viuva'
+    ) {
       return 'Viúvo(a)'
     }
 
@@ -424,7 +437,6 @@ export class FuncionarioService {
     if (value === null || value === undefined || value === '') return 0
 
     const texto = String(value).trim()
-
     if (!texto) return 0
 
     const normalizado = texto.includes(',')
