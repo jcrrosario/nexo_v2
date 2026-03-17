@@ -17,6 +17,9 @@ export class FuncaoEntity {
   @Column({ length: 150 })
   nome: string
 
+  @Column({ type: 'text', nullable: true })
+  descricao_atividades: string
+
   @CreateDateColumn({ type: 'timestamp without time zone' })
   created_at: Date
 

@@ -21,6 +21,7 @@ import { api } from '@/lib/api'
 type Funcao = {
   func_id: number
   nome: string
+  descricao_atividades: string
   created_at: string
   updated_at: string
   user_id_log: string
@@ -39,6 +40,7 @@ export default function FuncoesPage() {
 
   const [form, setForm] = useState<any>({
     nome: '',
+    descricao_atividades: '',
   })
 
   const pageSize = 5
@@ -57,13 +59,19 @@ export default function FuncoesPage() {
   }, [page, busca])
 
   function novo() {
-    setForm({ nome: '' })
+    setForm({
+      nome: '',
+      descricao_atividades: '',
+    })
     setEditando(false)
     setOpen(true)
   }
 
   function editar(funcao: Funcao) {
-    setForm(funcao)
+    setForm({
+      ...funcao,
+      descricao_atividades: funcao.descricao_atividades || '',
+    })
     setEditando(true)
     setOpen(true)
   }
@@ -101,8 +109,8 @@ export default function FuncoesPage() {
 
     autoTable(doc, {
       startY: 36,
-      head: [['Função']],
-      body: dados.map(d => [d.nome]),
+      head: [['Função', 'Descrição de Atividades']],
+      body: dados.map(d => [d.nome, d.descricao_atividades || '']),
       styles: {
         fontSize: 10,
         cellPadding: 6,
@@ -136,6 +144,7 @@ export default function FuncoesPage() {
   function gerarExcel() {
     const worksheetData = dados.map(d => ({
       Função: d.nome,
+      'Descrição de Atividades': d.descricao_atividades || '',
       'Criado em': new Date(d.created_at).toLocaleString(),
       'Última atualização': d.updated_at
         ? new Date(d.updated_at).toLocaleString()
@@ -180,6 +189,10 @@ export default function FuncoesPage() {
       <CrudTable
         columns={[
           { key: 'nome', label: 'Função' },
+          {
+            key: 'descricao_atividades',
+            label: 'Descrição de Atividades',
+          },
           {
             key: 'actions',
             label: 'Ações',
@@ -245,8 +258,7 @@ export default function FuncoesPage() {
           <div style={modal}>
             <h3>Confirmar exclusão</h3>
             <p>
-              Deseja excluir a função{' '}
-              <strong>{confirmar.nome}</strong>?
+              Deseja excluir a função <strong>{confirmar.nome}</strong>?
             </p>
             <div style={modalFooter}>
               <button style={btnCancel} onClick={() => setConfirmar(null)}>
@@ -270,6 +282,15 @@ export default function FuncoesPage() {
               value={form.nome}
               onChange={e => setForm({ ...form, nome: e.target.value })}
               style={input}
+            />
+
+            <textarea
+              placeholder="Descrição de Atividades"
+              value={form.descricao_atividades}
+              onChange={e =>
+                setForm({ ...form, descricao_atividades: e.target.value })
+              }
+              style={textarea}
             />
 
             <div style={modalFooter}>
@@ -365,14 +386,26 @@ const overlay: CSSProperties = {
 const modal: CSSProperties = {
   background: '#fff',
   borderRadius: 12,
-  width: 420,
+  width: 520,
   padding: 24,
 }
 
 const input: CSSProperties = {
+  width: '100%',
   padding: '10px 12px',
   borderRadius: 6,
   border: '1px solid #d1d5db',
+  marginTop: 10,
+}
+
+const textarea: CSSProperties = {
+  width: '100%',
+  minHeight: 120,
+  padding: '10px 12px',
+  borderRadius: 6,
+  border: '1px solid #d1d5db',
+  marginTop: 10,
+  resize: 'vertical',
 }
 
 const modalFooter: CSSProperties = {
