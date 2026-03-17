@@ -1,170 +1,122 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-
-import { Vinculacao } from './vinculacao.entity'
-import { FuncaoEntity } from '../funcao/funcao.entity'
 import { DepartamentoEntity } from '../departamento/departamento.entity'
-import { UsuarioEntity } from '../usuario/usuario.entity'
 
 @Injectable()
 export class VinculacaoService {
   constructor(
-    @InjectRepository(Vinculacao)
-    private readonly vinculacaoRepo: Repository<Vinculacao>,
-
-    @InjectRepository(FuncaoEntity)
-    private readonly funcaoRepo: Repository<FuncaoEntity>,
-
     @InjectRepository(DepartamentoEntity)
     private readonly departamentoRepo: Repository<DepartamentoEntity>,
-
-    @InjectRepository(UsuarioEntity)
-    private readonly usuarioRepo: Repository<UsuarioEntity>,
   ) {}
 
   async getHierarquia(empresaId: number) {
-    const rows = await this.vinculacaoRepo.query(
+    const rows = await this.departamentoRepo.query(
       `
-      SELECT 
-        d.dpto_id,
-        d.nome AS departamento,
-        f.func_id,
-        f.nome AS funcao,
-        u.user_id,
-        u.nome AS usuario,
-        v.vinculacao_id,
-        v.percentual_alocacao,
-        v.custo_mensal
-      FROM tb_vinculacao v
-      JOIN tb_departamentos d 
-        ON d.dpto_id = v.dpto_id 
-       AND d.idtb_empresas = v.empresa_id
-      JOIN tb_funcao f 
-        ON f.func_id = v.func_id 
-       AND f.idtb_empresas = v.empresa_id
-      JOIN tb_usuario u 
-        ON u.user_id = v.user_id 
-       AND u.idtb_empresas = v.empresa_id
-      WHERE v.empresa_id = $1
-        AND (v.excluido IS NULL OR v.excluido <> 'Sim')
-        AND (d.excluido IS NULL OR d.excluido <> 'Sim')
-        AND (f.excluido IS NULL OR f.excluido <> 'Sim')
-        AND (u.excluido IS NULL OR u.excluido <> 'Sim')
-      ORDER BY d.nome, f.nome, u.nome
+      SELECT
+        COALESCE(d.dpto_id, 0) AS dpto_id,
+        COALESCE(d.nome, 'Sem departamento') AS departamento,
+        COALESCE(f.func_id, 0) AS func_id,
+        COALESCE(f.nome, 'Sem função') AS funcao,
+        fn.funcionario_id,
+        fn.nome_completo,
+        COALESCE(fn.salario_bruto, 0) AS salario_bruto,
+        COALESCE(fn.encargos, 0) AS encargos,
+        COALESCE(fn.provisoes, 0) AS provisoes,
+        COALESCE(fn.beneficios, 0) AS beneficios
+      FROM tb_funcionarios fn
+      INNER JOIN tb_empresas e
+        ON e.empresa_id = fn.idtb_empresas
+      LEFT JOIN tb_departamentos d
+        ON d.dpto_id = fn.dpto_id
+       AND d.idtb_empresas = fn.idtb_empresas
+      LEFT JOIN tb_funcao f
+        ON f.func_id = fn.funcao_id
+       AND f.idtb_empresas = fn.idtb_empresas
+      WHERE fn.idtb_empresas = $1
+        AND (fn.excluido IS NULL OR fn.excluido <> 'Sim')
+        AND (e.ativa IS NULL OR e.ativa <> 'Nao')
+        AND (d.dpto_id IS NULL OR d.excluido IS NULL OR d.excluido <> 'Sim')
+        AND (f.func_id IS NULL OR f.excluido IS NULL OR f.excluido <> 'Sim')
+      ORDER BY
+        COALESCE(d.nome, 'Sem departamento'),
+        COALESCE(f.nome, 'Sem função'),
+        fn.nome_completo
       `,
       [empresaId],
     )
 
-    const map = new Map<number, any>()
+    const mapaDepartamentos = new Map<number, any>()
 
-    for (const r of rows) {
-      if (!map.has(r.dpto_id)) {
-        map.set(r.dpto_id, {
-          dpto_id: r.dpto_id,
-          nome: r.departamento,
+    for (const row of rows) {
+      const salarioBruto = Number(row.salario_bruto || 0)
+      const encargos = Number(row.encargos || 0)
+      const provisoes = Number(row.provisoes || 0)
+      const beneficios = Number(row.beneficios || 0)
+      const custoTotal =
+        salarioBruto + encargos + provisoes + beneficios
+
+      if (!mapaDepartamentos.has(Number(row.dpto_id))) {
+        mapaDepartamentos.set(Number(row.dpto_id), {
+          dpto_id: Number(row.dpto_id),
+          nome: row.departamento,
+          total_funcionarios: 0,
+          total_salario_bruto: 0,
+          total_encargos: 0,
+          total_provisoes: 0,
+          total_beneficios: 0,
+          total_custo: 0,
           funcoes: [],
         })
       }
 
-      const dpto = map.get(r.dpto_id)
+      const departamento = mapaDepartamentos.get(Number(row.dpto_id))
 
-      let func = dpto.funcoes.find(
-        (f: any) => f.func_id === r.func_id,
+      let funcao = departamento.funcoes.find(
+        (item: any) => item.func_id === Number(row.func_id),
       )
 
-      if (!func) {
-        func = {
-          func_id: r.func_id,
-          nome: r.funcao,
+      if (!funcao) {
+        funcao = {
+          func_id: Number(row.func_id),
+          nome: row.funcao,
+          total_funcionarios: 0,
+          total_salario_bruto: 0,
+          total_encargos: 0,
+          total_provisoes: 0,
+          total_beneficios: 0,
+          total_custo: 0,
           usuarios: [],
         }
-        dpto.funcoes.push(func)
+
+        departamento.funcoes.push(funcao)
       }
 
-      func.usuarios.push({
-        vinculacao_id: r.vinculacao_id,
-        user_id: r.user_id,
-        nome: r.usuario,
-        percentual_alocacao: Number(r.percentual_alocacao),
-        custo_mensal: Number(r.custo_mensal),
+      funcao.usuarios.push({
+        funcionario_id: Number(row.funcionario_id),
+        nome: row.nome_completo,
+        salario_bruto: salarioBruto,
+        encargos,
+        provisoes,
+        beneficios,
+        custo_total: custoTotal,
       })
+
+      funcao.total_funcionarios += 1
+      funcao.total_salario_bruto += salarioBruto
+      funcao.total_encargos += encargos
+      funcao.total_provisoes += provisoes
+      funcao.total_beneficios += beneficios
+      funcao.total_custo += custoTotal
+
+      departamento.total_funcionarios += 1
+      departamento.total_salario_bruto += salarioBruto
+      departamento.total_encargos += encargos
+      departamento.total_provisoes += provisoes
+      departamento.total_beneficios += beneficios
+      departamento.total_custo += custoTotal
     }
 
-    return Array.from(map.values())
-  }
-
-  async getCombos(empresaId: number) {
-    const departamentos = await this.departamentoRepo
-      .createQueryBuilder('d')
-      .where('d.idtb_empresas = :empresaId', { empresaId })
-      .andWhere("(d.excluido IS NULL OR d.excluido <> 'Sim')")
-      .orderBy('d.nome', 'ASC')
-      .getMany()
-
-    const funcoes = await this.funcaoRepo
-      .createQueryBuilder('f')
-      .where('f.idtb_empresas = :empresaId', { empresaId })
-      .andWhere("(f.excluido IS NULL OR f.excluido <> 'Sim')")
-      .orderBy('f.nome', 'ASC')
-      .getMany()
-
-    const usuarios = await this.usuarioRepo
-      .createQueryBuilder('u')
-      .where('u.idtb_empresas = :empresaId', { empresaId })
-      .andWhere("(u.excluido IS NULL OR u.excluido <> 'Sim')")
-      .orderBy('u.nome', 'ASC')
-      .select(['u.user_id', 'u.nome'])
-      .getMany()
-
-    return {
-      departamentos,
-      funcoes,
-      usuarios,
-    }
-  }
-
-  async criar(data: any, empresaId: number, userLog: string) {
-    const vinc = this.vinculacaoRepo.create({
-      empresa_id: empresaId,
-      dpto_id: Number(data.dpto_id),
-      func_id: Number(data.func_id),
-      user_id: String(data.user_id),
-      percentual_alocacao: Number(data.percentual_alocacao),
-      custo_mensal: data.custo_mensal
-        ? Number(data.custo_mensal)
-        : 0,
-      user_id_log: userLog,
-      excluido: 'Nao',
-    })
-
-    return this.vinculacaoRepo.save(vinc)
-  }
-
-  async atualizar(id: number, data: any, empresaId: number, userLog: string) {
-    await this.vinculacaoRepo.update(
-      { vinculacao_id: id, empresa_id: empresaId },
-      {
-        percentual_alocacao: Number(data.percentual_alocacao),
-        custo_mensal: data.custo_mensal
-          ? Number(data.custo_mensal)
-          : 0,
-        user_id_log: userLog,
-      },
-    )
-
-    return { ok: true }
-  }
-
-  async excluir(id: number, empresaId: number, userLog: string) {
-    await this.vinculacaoRepo.update(
-      { vinculacao_id: id, empresa_id: empresaId },
-      {
-        excluido: 'Sim',
-        user_id_log: userLog,
-      },
-    )
-
-    return { ok: true }
+    return Array.from(mapaDepartamentos.values())
   }
 }
