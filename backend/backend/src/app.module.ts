@@ -16,6 +16,7 @@ import { FatorModule } from './entity/fator/fator.module'
 import { FormularioModule } from './entity/formulario/formulario.module'
 import { PesquisaModule } from './entity/pesquisa/pesquisa.module'
 import { FuncionarioModule } from './entity/funcionario/funcionario.module'
+import { FuncionarioCatModule } from './entity/funcionario-cat/funcionario-cat.module'
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { FuncionarioModule } from './entity/funcionario/funcionario.module'
     FormularioModule,
     PesquisaModule,
     FuncionarioModule,
+    FuncionarioCatModule,
   ],
 })
 export class AppModule {}

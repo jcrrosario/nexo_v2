@@ -125,8 +125,8 @@ export default function CategoriaPage() {
 
   return (
     <CrudLayout
-      title="Categoria de pesquisa"
-      subtitle="Cadastro de categorias usado nas pesquisas"
+      title="Categoria/Grupo de Risco"
+      subtitle="Cadastro de categorias/grupos de riscos da NR-1"
       actions={
         <div style={actions}>
           <button style={btnDark} onClick={gerarPDF}>

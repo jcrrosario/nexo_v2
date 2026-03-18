@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, CSSProperties } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   FileText,
   FileSpreadsheet,
@@ -118,6 +119,8 @@ const initialForm: FormState = {
 }
 
 export default function FuncionariosPage() {
+  const router = useRouter()
+
   const [dados, setDados] = useState<Funcionario[]>([])
   const [funcoes, setFuncoes] = useState<Funcao[]>([])
   const [departamentos, setDepartamentos] = useState<Departamento[]>([])
@@ -716,14 +719,30 @@ export default function FuncionariosPage() {
             label: 'Ações',
             render: d => (
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
-                <button style={btnIcon} onClick={() => editar(d)}>
+                <button style={btnIcon} onClick={() => editar(d)} title="Editar">
                   <Pencil size={14} />
                 </button>
-                <button style={btnInfo} onClick={() => setLog(d)}>
+
+                <button style={btnInfo} onClick={() => setLog(d)} title="Log">
                   <Clock size={14} />
                 </button>
-                <button style={btnDelete} onClick={() => setConfirmar(d)}>
+
+                <button
+                  style={btnDelete}
+                  onClick={() => setConfirmar(d)}
+                  title="Excluir"
+                >
                   <Trash2 size={14} />
+                </button>
+
+                <button
+                  style={btnSecondary}
+                  onClick={() =>
+                    router.push(`/dashboard/funcionarios/${d.funcionario_id}/cat`)
+                  }
+                  title="CAT"
+                >
+                  <FileText size={14} />
                 </button>
               </div>
             ),
@@ -1146,6 +1165,14 @@ const btnPrimary: CSSProperties = {
   padding: '8px 14px',
   borderRadius: 6,
   border: 'none',
+}
+
+const btnSecondary: CSSProperties = {
+  background: '#7c3aed',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 6,
+  padding: '6px 10px',
 }
 
 const btnExcel: CSSProperties = {

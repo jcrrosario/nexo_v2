@@ -164,7 +164,7 @@ export default function EntityLayout({
                   }}
                   onClick={() => router.push('/dashboard/categorias')}
                 >
-                  <AlertTriangle size={16} /> Categoria de pesquisas
+                  <AlertTriangle size={16} /> Categoria/Grupo de Risco
                 </div>
               </div>
             )}
