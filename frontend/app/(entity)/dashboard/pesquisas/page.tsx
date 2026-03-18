@@ -17,6 +17,10 @@ type Pesquisa = {
   data_inicial: string
   data_final: string
   observacoes: string
+  formulario?: {
+    form_id: number
+    nome: string
+  }
 }
 
 type Formulario = {
@@ -95,6 +99,11 @@ export default function PesquisasPage() {
       <CrudTable
         columns={[
           { key: 'pesq_id', label: 'ID' },
+          {
+            key: 'titulo',
+            label: 'Título da Pesquisa',
+            render: p => p.formulario?.nome ?? '',
+          },
           { key: 'data_inicial', label: 'Início' },
           { key: 'data_final', label: 'Fim' },
           {
@@ -104,6 +113,7 @@ export default function PesquisasPage() {
               <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
                 <button
                   style={btnDark}
+                  title="Lançamento de respostas"
                   onClick={() =>
                     router.push(
                       `/dashboard/pesquisas/${p.pesq_id}`,
@@ -115,6 +125,7 @@ export default function PesquisasPage() {
 
                 <button
                   style={btnDelete}
+                  title="Excluir pesquisa"
                   onClick={() => setConfirmar(p)}
                 >
                   <Trash2 size={14} />
@@ -138,7 +149,6 @@ export default function PesquisasPage() {
           <div style={modal}>
             <h3>Nova Pesquisa</h3>
 
-            {/* SELECT FORMULÁRIO */}
             <select
               value={form.form_id}
               onChange={e =>
